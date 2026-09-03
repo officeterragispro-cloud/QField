@@ -63,6 +63,10 @@ class QgsOfflineEditing;
 class QgsQuickMapCanvasMap;
 class QgsProject;
 class QgsPrintLayout;
+namespace Tgp
+{
+  class TgpFieldServices;
+}
 
 /**
  * \defgroup app
@@ -251,6 +255,7 @@ class QFIELD_APP_EXPORT QgisMobileapp : public QQmlApplicationEngine, public QfA
 
     std::unique_ptr<QfScreenDimmer> mScreenDimmer;
     std::unique_ptr<QfUrlHandler> mUrlHandler;
+    std::unique_ptr<Tgp::TgpFieldServices> mTgpFieldServices;
 
     QgsApplication *mApp;
 };

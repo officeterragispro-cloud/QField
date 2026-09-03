@@ -144,6 +144,7 @@
 #include <qgsvectorlayer.h>
 #include <qgsvectorlayertemporalproperties.h>
 #include <qgsvectortilelayer.h>
+#include "tgpfieldservices.h"
 
 
 #define QUOTE( string ) _QUOTE( string )
@@ -165,6 +166,8 @@ QgisMobileapp::QgisMobileapp( QgsApplication *app, QObject *parent )
   QDesktopServices::setUrlHandler( QStringLiteral( "qfield" ), mUrlHandler.get(), "handleUrl" );
 
   mMessageLogModel = new QfMessageLogModel( this );
+  const QString tgpStorageDirectory = QDir( QfPlatformUtilities::instance()->applicationDirectory() ).filePath( QStringLiteral( "tgp-field" ) );
+  mTgpFieldServices = std::make_unique<Tgp::TgpFieldServices>( tgpStorageDirectory, this );
 
   mCogoRegistry.reset( new QfCogoRegistry() );
   QfCogoRegistry::setInstance( mCogoRegistry.get() );
@@ -431,6 +434,7 @@ void QgisMobileapp::registerGlobalVariables()
   rootContext()->setContextProperty( "drawingTemplateModel", mDrawingTemplateModel );
   rootContext()->setContextProperty( "qfieldAuthRequestHandler", mAuthRequestHandler );
   rootContext()->setContextProperty( "trackingModel", mTrackingModel );
+  rootContext()->setContextProperty( "tgpField", mTgpFieldServices.get() );
   addImageProvider( QLatin1String( "legend" ), mLegendImageProvider );
   addImageProvider( QLatin1String( "asynclegend" ), mAsyncLegendImageProvider );
   addImageProvider( QLatin1String( "localfiles" ), mLocalFilesImageProvider );

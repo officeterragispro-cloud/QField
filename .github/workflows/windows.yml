@@ -179,13 +179,13 @@ jobs:
             INSTALLER_SUFFIX="msi"
           fi
 
-          ARTIFACT_PATHNAME=$(ls ${{ env.CMAKE_BUILD_DIR }}/QField-*-win64.${INSTALLER_SUFFIX} | head -n 1)
-          mv "$ARTIFACT_PATHNAME" "${{ env.CMAKE_BUILD_DIR }}/QField-${{ matrix.platform_arch }}.${INSTALLER_SUFFIX}"
+          ARTIFACT_PATHNAME=$(ls ${{ env.CMAKE_BUILD_DIR }}/TGP-FIELD-*-win64.${INSTALLER_SUFFIX} | head -n 1)
+          mv "$ARTIFACT_PATHNAME" "${{ env.CMAKE_BUILD_DIR }}/TGP-FIELD-${{ matrix.platform_arch }}.${INSTALLER_SUFFIX}"
 
-          ARTIFACT_PATHNAME="${{ env.CMAKE_BUILD_DIR }}/QField-${{ matrix.platform_arch }}.${INSTALLER_SUFFIX}"
+          ARTIFACT_PATHNAME="${{ env.CMAKE_BUILD_DIR }}/TGP-FIELD-${{ matrix.platform_arch }}.${INSTALLER_SUFFIX}"
           ARTIFACT_NAME=$(basename $ARTIFACT_PATHNAME)
           echo "ARTIFACT_PATHNAME=${ARTIFACT_PATHNAME}" >> $GITHUB_ENV
-          echo "ARTIFACT_NAME=qfield-${{ env.CI_PACKAGE_FILE_SUFFIX }}-windows-${{ matrix.platform_arch }}.${INSTALLER_SUFFIX}" >> $GITHUB_ENV
+          echo "ARTIFACT_NAME=tgp-field-${{ env.CI_PACKAGE_FILE_SUFFIX }}-windows-${{ matrix.platform_arch }}.${INSTALLER_SUFFIX}" >> $GITHUB_ENV
 
           echo "artifact_name_${{ matrix.platform_arch }}=${ARTIFACT_NAME}" >> "$GITHUB_OUTPUT"
 
@@ -200,7 +200,10 @@ jobs:
             ${{ env.CMAKE_BUILD_DIR }}/CMakeCache.txt
 
       - name: 🎭 Sign
-        if: ( github.event_name == 'release'  && startsWith(github.ref, 'refs/tags/v') ) || github.event_name == 'workflow_dispatch' && env.ARTIFACT_NAME != null
+        # Manual TGP-FIELD test builds intentionally remain unsigned. Release
+        # signing is enabled only after TerraGIS Pro supplies its own Azure
+        # Trusted Signing credentials and certificate profile.
+        if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v') && env.ARTIFACT_NAME != null
         uses: azure/trusted-signing-action@v2.0.0
         with:
           azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}

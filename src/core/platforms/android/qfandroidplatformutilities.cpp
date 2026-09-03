@@ -742,7 +742,7 @@ void QfAndroidPlatformUtilities::uploadPendingAttachments( QfCloudConnection *co
     if ( connection )
     {
       qInfo() << "Launching QFieldCloud service...";
-      QJniObject::callStaticMethod<void>( "ch/opengis/" APP_PACKAGE_NAME "/QFieldCloudService",
+      QJniObject::callStaticMethod<void>( APP_PACKAGE_PATH "/QFieldCloudService",
                                           "startQFieldCloudService",
                                           "(Landroid/content/Context;)V",
                                           qtAndroidContext().object() );
@@ -788,7 +788,7 @@ QString QfAndroidPlatformUtilities::startPositioningService() const
   }
 
   qInfo() << "Launching QField positioning service...";
-  QJniObject::callStaticMethod<void>( "ch/opengis/" APP_PACKAGE_NAME "/QFieldPositioningService",
+  QJniObject::callStaticMethod<void>( APP_PACKAGE_PATH "/QFieldPositioningService",
                                       "startQFieldPositioningService",
                                       "(Landroid/content/Context;)V",
                                       qtAndroidContext().object() );
@@ -798,7 +798,7 @@ QString QfAndroidPlatformUtilities::startPositioningService() const
 void QfAndroidPlatformUtilities::stopPositioningService() const
 {
   qInfo() << "Terminating QField positioning service...";
-  QJniObject::callStaticMethod<void>( "ch/opengis/" APP_PACKAGE_NAME "/QFieldPositioningService",
+  QJniObject::callStaticMethod<void>( APP_PACKAGE_PATH "/QFieldPositioningService",
                                       "stopQFieldPositioningService",
                                       "(Landroid/content/Context;)V",
                                       qtAndroidContext().object() );

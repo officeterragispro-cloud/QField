@@ -28,6 +28,9 @@ set(QFIELD_APP_QML_FILES
     QfSketcher.qml
     QfTrackerSettings.qml
     QfWelcomeScreen.qml
+    TgpDesktopWorkspace.qml
+    TgpFeaturePage.qml
+    TgpMetricCard.qml
     QgisMobileapp.qml)
 
 # Type registration stays imperative, in QfApp::registerQmlTypes().

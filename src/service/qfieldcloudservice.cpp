@@ -43,7 +43,7 @@ void QFieldCloudService::initService()
     }
     const QJniObject message = QJniObject::fromString( messageString );
     const int progress = static_cast<int>( fileProgress * 100 );
-    QJniObject::callStaticMethod<void>( "ch/opengis/" APP_PACKAGE_NAME "/QFieldCloudService",
+    QJniObject::callStaticMethod<void>( APP_PACKAGE_PATH "/QFieldCloudService",
                                         "triggerShowNotification",
                                         "(Ljava/lang/String;I)V",
                                         message.object<jstring>(),

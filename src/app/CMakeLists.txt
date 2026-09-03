@@ -1,6 +1,11 @@
 find_package(Qt6QuickCompiler QUIET)
 
 if(MSVC)
+  if(APP_ICON_PATH AND EXISTS "${APP_ICON_PATH}/windows/${APP_ICON}.ico")
+    set(APP_WINDOWS_ICON_PATH "${APP_ICON_PATH}/windows/${APP_ICON}.ico")
+  else()
+    set(APP_WINDOWS_ICON_PATH "${CMAKE_SOURCE_DIR}/images/icons/qfield_logo.ico")
+  endif()
   configure_file("${CMAKE_SOURCE_DIR}/platform/windows/appicon.rc.in"
                  "${CMAKE_CURRENT_BINARY_DIR}/appicon.rc")
   set(ICON_SRC "${CMAKE_CURRENT_BINARY_DIR}/appicon.rc")
@@ -106,7 +111,7 @@ target_compile_features(qfield_app PUBLIC cxx_std_20)
 
 set_target_properties(qfield_app PROPERTIES AUTOMOC TRUE)
 
-target_link_libraries(qfield_app PUBLIC qfield_3d qfield_gui qfield_core)
+target_link_libraries(qfield_app PUBLIC qfield_3d qfield_gui qfield_core tgp_sync)
 
 add_subdirectory(qml)
 
@@ -262,7 +267,7 @@ if(IOS)
 
   add_qt_ios_app(
     qfield
-    NAME "QField"
+    NAME "${APP_NAME}"
     VERSION "${APK_VERSION_CODE}"
     SHORT_VERSION "${APK_VERSION_CODE}"
     LONG_VERSION "${APK_VERSION_CODE}"

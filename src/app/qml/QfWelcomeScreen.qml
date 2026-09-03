@@ -13,6 +13,7 @@ Page {
   id: welcomeScreen
 
   property bool firstShown: false
+  readonly property bool tgpDesktopMode: Qt.platform.os === "windows" && width >= 800
 
   property alias model: table.model
 
@@ -49,7 +50,19 @@ Page {
     }
   }
 
+  TgpDesktopWorkspace {
+    anchors.fill: parent
+    visible: welcomeScreen.tgpDesktopMode
+    recentProjectsModel: welcomeScreen.model
+
+    onShowLocalDataPicker: welcomeScreen.showLocalDataPicker()
+    onShowProjectCreationScreen: welcomeScreen.showProjectCreationScreen()
+    onShowSettings: welcomeScreen.showSettings()
+    onReturnToMap: welcomeScreen.visible = false
+  }
+
   ScrollView {
+    visible: !welcomeScreen.tgpDesktopMode
     topPadding: Math.max(mainWindow.sceneTopMargin + 58, (mainWindow.height - welcomeLayout.height) / 2 - 50)
     leftPadding: mainWindow.sceneLeftMargin
     rightPadding: mainWindow.sceneRightMargin
@@ -819,6 +832,7 @@ Page {
   }
 
   Column {
+    visible: !welcomeScreen.tgpDesktopMode
     spacing: 4
     anchors {
       top: parent.top
