@@ -224,9 +224,9 @@ Item {
               interactive: false
               model: root.recentProjectsModel
               delegate: Rectangle {
-                required property string ProjectPath
-                required property string ProjectTitle
-                required property int ProjectType
+                property string projectPath: ProjectPath
+                property string projectTitle: ProjectTitle
+                property int projectType: ProjectType
                 width: 262
                 height: 132
                 radius: 14
@@ -234,18 +234,18 @@ Item {
                 border.color: "#D4E1ED"
                 layer.enabled: projectMouse.containsMouse
 
-                Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: 6; radius: 3; color: ProjectType === 1 ? root.blue : root.green }
+                Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: 6; radius: 3; color: projectType === 1 ? root.blue : root.green }
                 Column {
                   anchors.fill: parent
                   anchors.margins: 18
                   anchors.leftMargin: 22
                   spacing: 8
-                  Label { text: ProjectType === 1 ? qsTr("CLOUD PROJECT") : qsTr("LOCAL PROJECT"); color: ProjectType === 1 ? root.blue : root.green; font.bold: true; font.pixelSize: 10 }
-                  Label { width: parent.width; text: ProjectTitle; color: root.deepNavy; font.bold: true; font.pixelSize: 16; elide: Text.ElideRight }
-                  Label { width: parent.width; text: ProjectPath; color: "#6A8192"; font.pixelSize: 10; elide: Text.ElideMiddle }
+                  Label { text: projectType === 1 ? qsTr("CLOUD PROJECT") : qsTr("LOCAL PROJECT"); color: projectType === 1 ? root.blue : root.green; font.bold: true; font.pixelSize: 10 }
+                  Label { width: parent.width; text: projectTitle; color: root.deepNavy; font.bold: true; font.pixelSize: 16; elide: Text.ElideRight }
+                  Label { width: parent.width; text: projectPath; color: "#6A8192"; font.pixelSize: 10; elide: Text.ElideMiddle }
                   Label { text: qsTr("Open project  →"); color: root.blue; font.bold: true; font.pixelSize: 12 }
                 }
-                MouseArea { id: projectMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: iface.loadFile(parent.ProjectPath, parent.ProjectTitle) }
+                MouseArea { id: projectMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: iface.loadFile(parent.projectPath, parent.projectTitle) }
               }
             }
 
