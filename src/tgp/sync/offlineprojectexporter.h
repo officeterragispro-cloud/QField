@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QObject>
 #include <QList>
+#include <QObject>
 #include <QString>
 #include <QUrl>
 #include <QVariantList>
@@ -16,12 +16,12 @@ namespace Tgp
 
   struct OfflineExportRequest
   {
-    QString projectId;
-    QString workspaceId;
-    QUrl qgisProject;
-    QList<QUrl> geopackages;
-    QUrl attachmentsDirectory;
-    bool keepLocalCopy = true;
+      QString projectId;
+      QString workspaceId;
+      QUrl qgisProject;
+      QList<QUrl> geopackages;
+      QUrl attachmentsDirectory;
+      bool keepLocalCopy = true;
   };
 
   // Creates an immutable, QGIS-readable snapshot and persists an upload job.
@@ -56,6 +56,6 @@ namespace Tgp
       QString mStorageDirectory;
       std::unique_ptr<OfflineExportQueue> mQueue;
   };
-}
+} // namespace Tgp
 
 Q_DECLARE_METATYPE( Tgp::OfflineExportRequest )

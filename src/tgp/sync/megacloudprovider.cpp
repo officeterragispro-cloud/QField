@@ -3,10 +3,8 @@
 #include <QDir>
 #include <QMetaObject>
 #include <QSettings>
-
 #include <qgsapplication.h>
 #include <qgsauthmanager.h>
-#include <qgsauthmethodconfig.h>
 
 #ifdef TGP_WITH_MEGA_SDK
 #include <megaapi.h>
@@ -19,7 +17,7 @@ namespace
   constexpr auto SESSION_CONFIG_KEY = "/TGPField/Mega/sessionConfigId";
   constexpr auto ACCOUNT_EMAIL_KEY = "/TGPField/Mega/accountEmail";
   constexpr auto SESSION_VALUE_KEY = "tgp-mega-session";
-}
+} // namespace
 
 #ifdef TGP_WITH_MEGA_SDK
 class MegaCloudProviderPrivate final : public mega::MegaRequestListener
@@ -84,10 +82,12 @@ class MegaCloudProviderPrivate final : public mega::MegaRequestListener
 
       if ( requestType == mega::MegaRequest::TYPE_LOGOUT )
       {
-        QMetaObject::invokeMethod( q, [this]() {
-          q->setReady( false );
-          q->setStatusMessage( MegaCloudProvider::tr( "MEGA disconnected." ) );
-        }, Qt::QueuedConnection );
+        QMetaObject::invokeMethod(
+          q, [this]() {
+            q->setReady( false );
+            q->setStatusMessage( MegaCloudProvider::tr( "MEGA disconnected." ) );
+          },
+          Qt::QueuedConnection );
       }
     }
 
@@ -97,10 +97,13 @@ class MegaCloudProviderPrivate final : public mega::MegaRequestListener
   private:
     void dispatchAuthentication( bool success, const QString &message, const QByteArray &session )
     {
-      QMetaObject::invokeMethod( q, [this, success, message, session]() {
-        if ( !pendingEmail.isEmpty() ) q->setAccountEmail( pendingEmail );
-        q->finishAuthentication( success, message, session );
-      }, Qt::QueuedConnection );
+      QMetaObject::invokeMethod(
+        q, [this, success, message, session]() {
+          if ( !pendingEmail.isEmpty() )
+            q->setAccountEmail( pendingEmail );
+          q->finishAuthentication( success, message, session );
+        },
+        Qt::QueuedConnection );
     }
 
     MegaCloudProvider *q = nullptr;
@@ -118,7 +121,8 @@ MegaCloudProvider::MegaCloudProvider( const QString &storageDirectory, QObject *
 #ifdef TGP_WITH_MEGA_SDK
   mSdk = std::make_unique<MegaCloudProviderPrivate>( this, storageDirectory );
   setStatusMessage( hasStoredSession() ? tr( "Saved MEGA session found." ) : tr( "MEGA is ready to connect." ) );
-  if ( hasStoredSession() ) QMetaObject::invokeMethod( this, &MegaCloudProvider::authenticate, Qt::QueuedConnection );
+  if ( hasStoredSession() )
+    QMetaObject::invokeMethod( this, &MegaCloudProvider::authenticate, Qt::QueuedConnection );
 #else
   setStatusMessage( tr( "MEGA SDK is not included in this build." ) );
 #endif
@@ -167,12 +171,7 @@ QString MegaCloudProvider::statusMessage() const
 
 void MegaCloudProvider::authenticate()
 {
-  if ( !sdkAvailable() )
-  {
-    finishAuthentication( false, tr( "MEGA SDK is not included in this build." ) );
-    return;
-  }
-
+#ifdef TGP_WITH_MEGA_SDK
   const QByteArray session = storedSession();
   if ( session.isEmpty() )
   {
@@ -182,8 +181,9 @@ void MegaCloudProvider::authenticate()
 
   setAuthenticating( true );
   setStatusMessage( tr( "Restoring the MEGA session…" ) );
-#ifdef TGP_WITH_MEGA_SDK
   mSdk->resume( session );
+#else
+  finishAuthentication( false, tr( "MEGA SDK is not included in this build." ) );
 #endif
 }
 
@@ -195,18 +195,15 @@ void MegaCloudProvider::login( const QString &email, const QString &password, bo
     finishAuthentication( false, tr( "Email and password are required." ) );
     return;
   }
-  if ( !sdkAvailable() )
-  {
-    finishAuthentication( false, tr( "This installer was built without the MEGA SDK." ) );
-    return;
-  }
-
+#ifdef TGP_WITH_MEGA_SDK
   mRememberSession = rememberSession;
   setAccountEmail( normalizedEmail );
   setAuthenticating( true );
   setStatusMessage( tr( "Connecting to MEGA…" ) );
-#ifdef TGP_WITH_MEGA_SDK
   mSdk->login( normalizedEmail, password );
+#else
+  Q_UNUSED( rememberSession )
+  finishAuthentication( false, tr( "This installer was built without the MEGA SDK." ) );
 #endif
 }
 
@@ -238,21 +235,24 @@ void MegaCloudProvider::uploadObject( const QString &objectId, const QString &, 
 
 void MegaCloudProvider::setReady( bool ready )
 {
-  if ( mReady == ready ) return;
+  if ( mReady == ready )
+    return;
   mReady = ready;
   emit readyChanged();
 }
 
 void MegaCloudProvider::setAuthenticating( bool authenticating )
 {
-  if ( mAuthenticating == authenticating ) return;
+  if ( mAuthenticating == authenticating )
+    return;
   mAuthenticating = authenticating;
   emit authenticatingChanged();
 }
 
 void MegaCloudProvider::setAccountEmail( const QString &email )
 {
-  if ( mAccountEmail == email ) return;
+  if ( mAccountEmail == email )
+    return;
   mAccountEmail = email;
   QSettings().setValue( QLatin1String( ACCOUNT_EMAIL_KEY ), email );
   emit accountEmailChanged();
@@ -260,22 +260,26 @@ void MegaCloudProvider::setAccountEmail( const QString &email )
 
 void MegaCloudProvider::setStatusMessage( const QString &message )
 {
-  if ( mStatusMessage == message ) return;
+  if ( mStatusMessage == message )
+    return;
   mStatusMessage = message;
   emit statusMessageChanged();
 }
 
 QByteArray MegaCloudProvider::storedSession() const
 {
-  if ( mSessionConfigId.isEmpty() ) return {};
+  if ( mSessionConfigId.isEmpty() )
+    return {};
   QgsAuthMethodConfig config;
-  if ( !QgsApplication::authManager()->loadAuthenticationConfig( mSessionConfigId, config, true ) ) return {};
+  if ( !QgsApplication::authManager()->loadAuthenticationConfig( mSessionConfigId, config, true ) )
+    return {};
   return config.config( QLatin1String( SESSION_VALUE_KEY ) ).toLatin1();
 }
 
 void MegaCloudProvider::saveSession( const QByteArray &session )
 {
-  if ( session.isEmpty() ) return;
+  if ( session.isEmpty() )
+    return;
   QgsAuthMethodConfig config;
   if ( !mSessionConfigId.isEmpty() )
     QgsApplication::authManager()->loadAuthenticationConfig( mSessionConfigId, config, true );

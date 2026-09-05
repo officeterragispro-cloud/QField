@@ -62,4 +62,4 @@ namespace Tgp
       bool mRememberSession = true;
       std::unique_ptr<::MegaCloudProviderPrivate> mSdk;
   };
-}
+} // namespace Tgp

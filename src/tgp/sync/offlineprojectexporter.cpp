@@ -1,8 +1,8 @@
-#include "offlineprojectexporter.h"
-
 #include "offlineexportqueue.h"
+#include "offlineprojectexporter.h"
 #include "qffileutils.h"
 
+#include <QCryptographicHash>
 #include <QDateTime>
 #include <QDir>
 #include <QDirIterator>
@@ -11,17 +11,15 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QCryptographicHash>
 #include <QSet>
-#include <QVariantMap>
 #include <QUuid>
-
-#include <utility>
-
-#include <qgsziputils.h>
+#include <QVariantMap>
 #include <qgsmaplayer.h>
 #include <qgsproject.h>
 #include <qgsproviderregistry.h>
+#include <qgsziputils.h>
+
+#include <utility>
 
 using namespace Tgp;
 
@@ -32,19 +30,21 @@ namespace
     const QFileInfo sourceInfo( source );
     if ( !sourceInfo.isFile() )
     {
-      if ( error ) *error = QObject::tr( "Missing source file: %1" ).arg( source );
+      if ( error )
+        *error = QObject::tr( "Missing source file: %1" ).arg( source );
       return false;
     }
     QDir().mkpath( QFileInfo( destination ).absolutePath() );
     QFile::remove( destination );
     if ( !QFile::copy( source, destination ) )
     {
-      if ( error ) *error = QObject::tr( "Could not copy %1" ).arg( source );
+      if ( error )
+        *error = QObject::tr( "Could not copy %1" ).arg( source );
       return false;
     }
     return true;
   }
-}
+} // namespace
 
 OfflineProjectExporter::OfflineProjectExporter( const QString &storageDirectory, QObject *parent )
   : QObject( parent )
@@ -80,8 +80,7 @@ QVariantList OfflineProjectExporter::jobs() const
       { QStringLiteral( "createdAt" ), job.createdAt },
       { QStringLiteral( "attempts" ), job.attempts },
       { QStringLiteral( "state" ), exportStateName( job.state ) },
-      { QStringLiteral( "lastError" ), job.lastError }
-    } );
+      { QStringLiteral( "lastError" ), job.lastError } } );
   }
   return result;
 }
@@ -110,10 +109,12 @@ void OfflineProjectExporter::enqueueCurrentProject( QObject *projectObject, cons
   const auto layers = project->mapLayers();
   for ( QgsMapLayer *layer : layers )
   {
-    if ( !layer ) continue;
+    if ( !layer )
+      continue;
     const QVariantMap decoded = QgsProviderRegistry::instance()->decodeUri( layer->providerType(), layer->source() );
     QString path = decoded.value( QStringLiteral( "path" ) ).toString();
-    if ( path.isEmpty() ) path = layer->source().section( QLatin1Char( '|' ), 0, 0 );
+    if ( path.isEmpty() )
+      path = layer->source().section( QLatin1Char( '|' ), 0, 0 );
     if ( QFileInfo( path ).suffix().compare( QLatin1String( "gpkg" ), Qt::CaseInsensitive ) == 0 )
       geopackagePaths.insert( QFileInfo( path ).absoluteFilePath() );
   }
@@ -121,7 +122,8 @@ void OfflineProjectExporter::enqueueCurrentProject( QObject *projectObject, cons
     request.geopackages.append( QUrl::fromLocalFile( path ) );
 
   const QString attachments = QDir( project->homePath() ).filePath( QStringLiteral( "attachments" ) );
-  if ( QFileInfo::exists( attachments ) ) request.attachmentsDirectory = QUrl::fromLocalFile( attachments );
+  if ( QFileInfo::exists( attachments ) )
+    request.attachmentsDirectory = QUrl::fromLocalFile( attachments );
   enqueueExport( request );
 }
 
@@ -138,7 +140,6 @@ void OfflineProjectExporter::enqueueExport( const OfflineExportRequest &request 
   job.projectId = request.projectId;
   job.createdAt = QDateTime::currentDateTimeUtc().toString( Qt::ISODateWithMs );
   job.keepLocalCopy = request.keepLocalCopy;
-  job.state = ExportState::Preparing;
 
   QString error;
   const QString projectSource = request.qgisProject.toLocalFile();
@@ -147,14 +148,17 @@ void OfflineProjectExporter::enqueueExport( const OfflineExportRequest &request 
     error = tr( "The project must be a .qgz or .qgs file." );
 
   const QString stagedProject = QDir( stagingDirectory ).filePath( QStringLiteral( "project.%1" ).arg( projectSuffix ) );
-  if ( error.isEmpty() ) copyFileChecked( projectSource, stagedProject, &error );
+  if ( error.isEmpty() )
+    copyFileChecked( projectSource, stagedProject, &error );
 
   QJsonArray geopackageEntries;
   QStringList archiveFiles;
-  if ( error.isEmpty() ) archiveFiles.append( stagedProject );
+  if ( error.isEmpty() )
+    archiveFiles.append( stagedProject );
   for ( const QUrl &url : request.geopackages )
   {
-    if ( !error.isEmpty() ) break;
+    if ( !error.isEmpty() )
+      break;
     const QString source = url.toLocalFile();
     if ( QFileInfo( source ).suffix().compare( QLatin1String( "gpkg" ), Qt::CaseInsensitive ) != 0 )
     {
@@ -163,7 +167,8 @@ void OfflineProjectExporter::enqueueExport( const OfflineExportRequest &request 
     }
     const QString relative = QStringLiteral( "data/%1" ).arg( QFileInfo( source ).fileName() );
     const QString destination = QDir( stagingDirectory ).filePath( relative );
-    if ( !copyFileChecked( source, destination, &error ) ) break;
+    if ( !copyFileChecked( source, destination, &error ) )
+      break;
     archiveFiles.append( destination );
     geopackageEntries.append( relative );
   }
@@ -177,7 +182,8 @@ void OfflineProjectExporter::enqueueExport( const OfflineExportRequest &request 
     else
     {
       QDirIterator iterator( attachmentsDestination, QDir::Files, QDirIterator::Subdirectories );
-      while ( iterator.hasNext() ) archiveFiles.append( iterator.next() );
+      while ( iterator.hasNext() )
+        archiveFiles.append( iterator.next() );
     }
   }
 
@@ -188,8 +194,7 @@ void OfflineProjectExporter::enqueueExport( const OfflineExportRequest &request 
     { QStringLiteral( "createdAt" ), job.createdAt },
     { QStringLiteral( "qgisProject" ), QFileInfo( stagedProject ).fileName() },
     { QStringLiteral( "geopackages" ), geopackageEntries },
-    { QStringLiteral( "attachments" ), QStringLiteral( "attachments/" ) }
-  };
+    { QStringLiteral( "attachments" ), QStringLiteral( "attachments/" ) } };
   const QString manifestPath = QDir( stagingDirectory ).filePath( QStringLiteral( "manifest.json" ) );
   QFile manifestFile( manifestPath );
   if ( error.isEmpty() && ( !manifestFile.open( QIODevice::WriteOnly ) || manifestFile.write( QJsonDocument( manifest ).toJson( QJsonDocument::Indented ) ) < 0 ) )
@@ -208,7 +213,8 @@ void OfflineProjectExporter::enqueueExport( const OfflineExportRequest &request 
   {
     job.sha256 = QfFileUtils::fileChecksum( job.archivePath, QCryptographicHash::Sha256 );
     job.size = QFileInfo( job.archivePath ).size();
-    if ( job.sha256.isEmpty() ) error = tr( "Could not calculate archive checksum." );
+    if ( job.sha256.isEmpty() )
+      error = tr( "Could not calculate archive checksum." );
   }
 
   if ( !error.isEmpty() )
@@ -243,7 +249,8 @@ void OfflineProjectExporter::cancelExport( const QString &jobId )
 {
   for ( OfflineExportJob job : mQueue->jobs() )
   {
-    if ( job.jobId != jobId ) continue;
+    if ( job.jobId != jobId )
+      continue;
     job.state = ExportState::Cancelled;
     mQueue->upsert( job );
     emit exportStateChanged( jobId, exportStateName( job.state ), tr( "Export cancelled." ) );

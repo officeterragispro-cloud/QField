@@ -1,7 +1,6 @@
-#include "syncengine.h"
-
 #include "cloudprovider.h"
 #include "offlineexportqueue.h"
+#include "syncengine.h"
 
 #include <QFileInfo>
 #include <QUrl>
@@ -26,14 +25,16 @@ bool SyncEngine::busy() const
 
 void SyncEngine::setBusy( bool busy )
 {
-  if ( mBusy == busy ) return;
+  if ( mBusy == busy )
+    return;
   mBusy = busy;
   emit busyChanged();
 }
 
 void SyncEngine::synchronize()
 {
-  if ( busy() ) return;
+  if ( busy() )
+    return;
   if ( !mProvider || !mProvider->isReady() )
   {
     emit jobStateChanged( {}, exportStateName( ExportState::WaitingForNetwork ), tr( "Cloud provider is not ready." ) );
@@ -47,7 +48,8 @@ void SyncEngine::retry( const QString &jobId )
 {
   for ( OfflineExportJob job : mQueue->jobs() )
   {
-    if ( job.jobId != jobId ) continue;
+    if ( job.jobId != jobId )
+      continue;
     job.state = ExportState::WaitingForNetwork;
     job.lastError.clear();
     mQueue->upsert( job );
@@ -60,7 +62,8 @@ void SyncEngine::processNext()
 {
   for ( OfflineExportJob job : mQueue->pendingJobs() )
   {
-    if ( job.state == ExportState::Preparing || job.state == ExportState::Cancelled ) continue;
+    if ( job.state == ExportState::Preparing || job.state == ExportState::Cancelled )
+      continue;
     if ( !QFileInfo::exists( job.archivePath ) )
     {
       job.state = ExportState::Failed;
@@ -83,15 +86,18 @@ void SyncEngine::processNext()
 
 void SyncEngine::handleTransferProgress( const QString &objectId, qint64 completed, qint64 total )
 {
-  if ( objectId == mActiveJobId ) emit jobProgress( objectId, completed, total );
+  if ( objectId == mActiveJobId )
+    emit jobProgress( objectId, completed, total );
 }
 
 void SyncEngine::handleTransferFinished( const QString &objectId, bool success, const QString &message )
 {
-  if ( objectId != mActiveJobId ) return;
+  if ( objectId != mActiveJobId )
+    return;
   for ( OfflineExportJob job : mQueue->jobs() )
   {
-    if ( job.jobId != objectId ) continue;
+    if ( job.jobId != objectId )
+      continue;
     job.state = success ? ExportState::Complete : ExportState::Failed;
     job.lastError = success ? QString() : message;
     mQueue->upsert( job );

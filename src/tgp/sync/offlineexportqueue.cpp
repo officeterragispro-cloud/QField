@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QSaveFile>
 
+#include <algorithm>
 #include <utility>
 
 using namespace Tgp;
@@ -27,8 +28,7 @@ namespace
       { QStringLiteral( "attempts" ), job.attempts },
       { QStringLiteral( "state" ), exportStateName( job.state ) },
       { QStringLiteral( "lastError" ), job.lastError },
-      { QStringLiteral( "keepLocalCopy" ), job.keepLocalCopy }
-    };
+      { QStringLiteral( "keepLocalCopy" ), job.keepLocalCopy } };
   }
 
   OfflineExportJob fromJson( const QJsonObject &object )
@@ -47,7 +47,7 @@ namespace
     job.keepLocalCopy = object.value( QStringLiteral( "keepLocalCopy" ) ).toBool( true );
     return job;
   }
-}
+} // namespace
 
 OfflineExportQueue::OfflineExportQueue( const QString &storageDirectory, QObject *parent )
   : QObject( parent )
@@ -81,23 +81,27 @@ bool OfflineExportQueue::reload( QString *error )
 {
   mJobs.clear();
   QFile file( queueFilePath() );
-  if ( !file.exists() ) return true;
+  if ( !file.exists() )
+    return true;
   if ( !file.open( QIODevice::ReadOnly ) )
   {
-    if ( error ) *error = file.errorString();
+    if ( error )
+      *error = file.errorString();
     return false;
   }
   QJsonParseError parseError;
   const QJsonDocument document = QJsonDocument::fromJson( file.readAll(), &parseError );
   if ( parseError.error != QJsonParseError::NoError || !document.isArray() )
   {
-    if ( error ) *error = parseError.errorString();
+    if ( error )
+      *error = parseError.errorString();
     return false;
   }
   for ( const QJsonValue &value : document.array() )
   {
     const OfflineExportJob job = fromJson( value.toObject() );
-    if ( !job.jobId.isEmpty() ) mJobs.append( job );
+    if ( !job.jobId.isEmpty() )
+      mJobs.append( job );
   }
   return true;
 }
@@ -106,21 +110,25 @@ bool OfflineExportQueue::save( QString *error )
 {
   if ( !QDir().mkpath( mStorageDirectory ) )
   {
-    if ( error ) *error = tr( "Could not create export queue directory." );
+    if ( error )
+      *error = tr( "Could not create export queue directory." );
     return false;
   }
   QJsonArray array;
-  for ( const OfflineExportJob &job : std::as_const( mJobs ) ) array.append( toJson( job ) );
+  for ( const OfflineExportJob &job : std::as_const( mJobs ) )
+    array.append( toJson( job ) );
   QSaveFile file( queueFilePath() );
   if ( !file.open( QIODevice::WriteOnly ) )
   {
-    if ( error ) *error = file.errorString();
+    if ( error )
+      *error = file.errorString();
     return false;
   }
   file.write( QJsonDocument( array ).toJson( QJsonDocument::Indented ) );
   if ( !file.commit() )
   {
-    if ( error ) *error = file.errorString();
+    if ( error )
+      *error = file.errorString();
     return false;
   }
   emit changed();
@@ -129,13 +137,13 @@ bool OfflineExportQueue::save( QString *error )
 
 bool OfflineExportQueue::upsert( const OfflineExportJob &job, QString *error )
 {
-  for ( OfflineExportJob &existing : mJobs )
+  const auto existing = std::find_if( mJobs.begin(), mJobs.end(), [&job]( const OfflineExportJob &candidate ) {
+    return candidate.jobId == job.jobId;
+  } );
+  if ( existing != mJobs.end() )
   {
-    if ( existing.jobId == job.jobId )
-    {
-      existing = job;
-      return save( error );
-    }
+    *existing = job;
+    return save( error );
   }
   mJobs.append( job );
   return save( error );

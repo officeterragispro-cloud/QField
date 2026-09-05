@@ -27,4 +27,4 @@ namespace Tgp
       QString mStorageDirectory;
       QList<OfflineExportJob> mJobs;
   };
-}
+} // namespace Tgp

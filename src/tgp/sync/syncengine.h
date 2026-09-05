@@ -38,4 +38,4 @@ namespace Tgp
       QString mActiveJobId;
       bool mBusy = false;
   };
-}
+} // namespace Tgp

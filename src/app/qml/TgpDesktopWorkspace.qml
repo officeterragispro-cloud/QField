@@ -70,14 +70,30 @@ Item {
           }
         }
 
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: "#1C4568" }
+        Rectangle {
+          Layout.fillWidth: true
+          Layout.preferredHeight: 1
+          color: "#1C4568"
+        }
 
         Repeater {
           model: [
-            { "label": qsTr("Projects"), "detail": qsTr("QGIS workspaces") },
-            { "label": qsTr("Field tools"), "detail": qsTr("Survey and navigation") },
-            { "label": qsTr("Maps & layers"), "detail": qsTr("Local and online data") },
-            { "label": qsTr("Offline & MEGA"), "detail": qsTr("Exports and transfer queue") }
+            {
+              "label": qsTr("Projects"),
+              "detail": qsTr("QGIS workspaces")
+            },
+            {
+              "label": qsTr("Field tools"),
+              "detail": qsTr("Survey and navigation")
+            },
+            {
+              "label": qsTr("Maps & layers"),
+              "detail": qsTr("Local and online data")
+            },
+            {
+              "label": qsTr("Offline & MEGA"),
+              "detail": qsTr("Exports and transfer queue")
+            }
           ]
 
           delegate: Rectangle {
@@ -105,15 +121,30 @@ Item {
               anchors.leftMargin: 20
               anchors.verticalCenter: parent.verticalCenter
               spacing: 3
-              Label { text: parent.parent.modelData.label; color: "white"; font.pixelSize: 14; font.bold: root.currentSection === parent.parent.index }
-              Label { text: parent.parent.modelData.detail; color: "#ACD1EC"; font.pixelSize: 11 }
+              Label {
+                text: parent.parent.modelData.label
+                color: "white"
+                font.pixelSize: 14
+                font.bold: root.currentSection === parent.parent.index
+              }
+              Label {
+                text: parent.parent.modelData.detail
+                color: "#ACD1EC"
+                font.pixelSize: 11
+              }
             }
 
-            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.currentSection = parent.index }
+            MouseArea {
+              anchors.fill: parent
+              cursorShape: Qt.PointingHandCursor
+              onClicked: root.currentSection = parent.index
+            }
           }
         }
 
-        Item { Layout.fillHeight: true }
+        Item {
+          Layout.fillHeight: true
+        }
 
         Rectangle {
           Layout.fillWidth: true
@@ -125,13 +156,32 @@ Item {
             anchors.fill: parent
             anchors.margins: 14
             spacing: 5
-            Label { text: qsTr("Cloud provider"); color: "#ACD1EC"; font.pixelSize: 11 }
+            Label {
+              text: qsTr("Cloud provider")
+              color: "#ACD1EC"
+              font.pixelSize: 11
+            }
             Row {
               spacing: 7
-              Rectangle { width: 9; height: 9; radius: 5; color: tgpField.cloudProvider.ready ? actionGreen : "#CA9315"; anchors.verticalCenter: parent.verticalCenter }
-              Label { text: tgpField.cloudProvider.ready ? qsTr("MEGA connected") : qsTr("MEGA not configured"); color: "white"; font.pixelSize: 13; font.bold: true }
+              Rectangle {
+                width: 9
+                height: 9
+                radius: 5
+                color: tgpField.cloudProvider.ready ? actionGreen : "#CA9315"
+                anchors.verticalCenter: parent.verticalCenter
+              }
+              Label {
+                text: tgpField.cloudProvider.ready ? qsTr("MEGA connected") : qsTr("MEGA not configured")
+                color: "white"
+                font.pixelSize: 13
+                font.bold: true
+              }
             }
-            Label { text: qsTr("%n transfer(s) pending", "", tgpField.offlineExporter.pendingCount); color: "#ACD1EC"; font.pixelSize: 11 }
+            Label {
+              text: qsTr("%n transfer(s) pending", "", tgpField.offlineExporter.pendingCount)
+              color: "#ACD1EC"
+              font.pixelSize: 11
+            }
             Button {
               width: parent.width
               height: 28
@@ -172,18 +222,41 @@ Item {
           anchors.rightMargin: 30
           ColumnLayout {
             spacing: 2
-            Label { text: [qsTr("My projects"), qsTr("Field tools"), qsTr("Maps & layers"), qsTr("Offline & MEGA")][root.currentSection]; color: navy; font.pixelSize: 21; font.bold: true }
-            Label { text: qsTr("Desktop workspace · Windows"); color: "#527086"; font.pixelSize: 12 }
+            Label {
+              text: [qsTr("My projects"), qsTr("Field tools"), qsTr("Maps & layers"), qsTr("Offline & MEGA")][root.currentSection]
+              color: navy
+              font.pixelSize: 21
+              font.bold: true
+            }
+            Label {
+              text: qsTr("Desktop workspace · Windows")
+              color: "#527086"
+              font.pixelSize: 12
+            }
           }
-          Item { Layout.fillWidth: true }
+          Item {
+            Layout.fillWidth: true
+          }
           Rectangle {
             Layout.preferredWidth: statusText.width + 26
             Layout.preferredHeight: 34
             radius: 17
             color: hasOpenProject ? "#E2F3E4" : "#E8F0F7"
-            Label { id: statusText; anchors.centerIn: parent; text: hasOpenProject ? qsTr("Project open") : qsTr("No project open"); color: hasOpenProject ? green : blue; font.bold: true; font.pixelSize: 12 }
+            Label {
+              id: statusText
+              anchors.centerIn: parent
+              text: hasOpenProject ? qsTr("Project open") : qsTr("No project open")
+              color: hasOpenProject ? green : blue
+              font.bold: true
+              font.pixelSize: 12
+            }
           }
-          Button { visible: hasOpenProject; text: qsTr("Return to map"); highlighted: true; onClicked: root.returnToMap() }
+          Button {
+            visible: hasOpenProject
+            text: qsTr("Return to map")
+            highlighted: true
+            onClicked: root.returnToMap()
+          }
         }
       }
 
@@ -205,23 +278,62 @@ Item {
               Layout.fillWidth: true
               ColumnLayout {
                 spacing: 5
-                Label { text: qsTr("Workspaces prepared for the field"); color: navy; font.pixelSize: 28; font.bold: true }
-                Label { text: qsTr("Open a QGIS project, import local GIS data or create a new project."); color: "#527086"; font.pixelSize: 14 }
+                Label {
+                  text: qsTr("Workspaces prepared for the field")
+                  color: navy
+                  font.pixelSize: 28
+                  font.bold: true
+                }
+                Label {
+                  text: qsTr("Open a QGIS project, import local GIS data or create a new project.")
+                  color: "#527086"
+                  font.pixelSize: 14
+                }
               }
-              Item { Layout.fillWidth: true }
-              Button { text: qsTr("Open local project"); onClicked: root.showLocalDataPicker() }
-              Button { text: qsTr("New project"); highlighted: true; onClicked: root.showProjectCreationScreen() }
+              Item {
+                Layout.fillWidth: true
+              }
+              Button {
+                text: qsTr("Open local project")
+                onClicked: root.showLocalDataPicker()
+              }
+              Button {
+                text: qsTr("New project")
+                highlighted: true
+                onClicked: root.showProjectCreationScreen()
+              }
             }
 
             RowLayout {
               Layout.fillWidth: true
               spacing: 14
-              TgpMetricCard { Layout.fillWidth: true; title: qsTr("Recent projects"); value: recentProjects.count.toString(); accent: root.blue }
-              TgpMetricCard { Layout.fillWidth: true; title: qsTr("Offline exports"); value: tgpField.offlineExporter.jobs.length.toString(); accent: root.green }
-              TgpMetricCard { Layout.fillWidth: true; title: qsTr("Pending transfers"); value: tgpField.offlineExporter.pendingCount.toString(); accent: "#CA9315" }
+              TgpMetricCard {
+                Layout.fillWidth: true
+                title: qsTr("Recent projects")
+                value: recentProjects.count.toString()
+                accent: root.blue
+              }
+              TgpMetricCard {
+                Layout.fillWidth: true
+                title: qsTr("Offline exports")
+                value: tgpField.offlineExporter.jobs.length.toString()
+                accent: root.green
+              }
+              TgpMetricCard {
+                Layout.fillWidth: true
+                title: qsTr("Pending transfers")
+                value: tgpField.offlineExporter.pendingCount.toString()
+                accent: "#CA9315"
+              }
             }
 
-            Label { text: qsTr("Recently opened"); color: navy; font.pixelSize: 17; font.bold: true; Layout.topMargin: 4 }
+            Label {
+              text: qsTr("Recently opened")
+              color: navy
+              font.pixelSize: 17
+              font.bold: true
+              Layout.topMargin: 4
+            }
 
             GridView {
               id: recentProjects
@@ -242,18 +354,54 @@ Item {
                 border.color: "#D4E1ED"
                 layer.enabled: projectMouse.containsMouse
 
-                Rectangle { anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: 6; radius: 3; color: projectType === 1 ? root.blue : root.green }
+                Rectangle {
+                  anchors.left: parent.left
+                  anchors.top: parent.top
+                  anchors.bottom: parent.bottom
+                  width: 6
+                  radius: 3
+                  color: projectType === 1 ? root.blue : root.green
+                }
                 Column {
                   anchors.fill: parent
                   anchors.margins: 18
                   anchors.leftMargin: 22
                   spacing: 8
-                  Label { text: projectType === 1 ? qsTr("CLOUD PROJECT") : qsTr("LOCAL PROJECT"); color: projectType === 1 ? root.blue : root.green; font.bold: true; font.pixelSize: 10 }
-                  Label { width: parent.width; text: projectTitle; color: root.deepNavy; font.bold: true; font.pixelSize: 16; elide: Text.ElideRight }
-                  Label { width: parent.width; text: projectPath; color: "#6A8192"; font.pixelSize: 10; elide: Text.ElideMiddle }
-                  Label { text: qsTr("Open project  →"); color: root.blue; font.bold: true; font.pixelSize: 12 }
+                  Label {
+                    text: projectType === 1 ? qsTr("CLOUD PROJECT") : qsTr("LOCAL PROJECT")
+                    color: projectType === 1 ? root.blue : root.green
+                    font.bold: true
+                    font.pixelSize: 10
+                  }
+                  Label {
+                    width: parent.width
+                    text: projectTitle
+                    color: root.deepNavy
+                    font.bold: true
+                    font.pixelSize: 16
+                    elide: Text.ElideRight
+                  }
+                  Label {
+                    width: parent.width
+                    text: projectPath
+                    color: "#6A8192"
+                    font.pixelSize: 10
+                    elide: Text.ElideMiddle
+                  }
+                  Label {
+                    text: qsTr("Open project  →")
+                    color: root.blue
+                    font.bold: true
+                    font.pixelSize: 12
+                  }
                 }
-                MouseArea { id: projectMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: iface.loadFile(parent.projectPath, parent.projectTitle) }
+                MouseArea {
+                  id: projectMouse
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: iface.loadFile(parent.projectPath, parent.projectTitle)
+                }
               }
             }
 
@@ -264,7 +412,21 @@ Item {
               radius: 14
               color: "white"
               border.color: "#D4E1ED"
-              Column { anchors.centerIn: parent; spacing: 8; Label { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr("No recent projects"); color: navy; font.bold: true; font.pixelSize: 15 } Label { text: qsTr("Open a .qgz/.qgs file or create the first project."); color: "#6A8192" } }
+              Column {
+                anchors.centerIn: parent
+                spacing: 8
+                Label {
+                  anchors.horizontalCenter: parent.horizontalCenter
+                  text: qsTr("No recent projects")
+                  color: navy
+                  font.bold: true
+                  font.pixelSize: 15
+                }
+                Label {
+                  text: qsTr("Open a .qgz/.qgs file or create the first project.")
+                  color: "#6A8192"
+                }
+              }
             }
           }
         }
@@ -273,12 +435,42 @@ Item {
           title: qsTr("Survey and field tools")
           subtitle: qsTr("SW Maps-style access to the surveying capabilities already available in the QField engine.")
           entries: [
-            { "title": qsTr("GNSS / RTK"), "text": qsTr("Bluetooth or serial receivers, NTRIP corrections and antenna height."), "tag": qsTr("EXISTING ENGINE"), "action": "settings" },
-            { "title": qsTr("Position averaging"), "text": qsTr("Collect multiple observations for a more stable point."), "tag": qsTr("FIELD"), "action": "map" },
-            { "title": qsTr("Stakeout"), "text": qsTr("Navigate to a point or feature with distance and bearing."), "tag": qsTr("NAVIGATION"), "action": "map" },
-            { "title": qsTr("Track recording"), "text": qsTr("Record walking or vehicle tracks directly into a line layer."), "tag": qsTr("OFFLINE"), "action": "map" },
-            { "title": qsTr("Geometry capture"), "text": qsTr("Points, lines and polygons with snapping and forms."), "tag": qsTr("QGIS FORMS"), "action": "map" },
-            { "title": qsTr("COGO & measurement"), "text": qsTr("Distances, areas, bearings and construction geometry."), "tag": qsTr("TOOLS"), "action": "map" }
+            {
+              "title": qsTr("GNSS / RTK"),
+              "text": qsTr("Bluetooth or serial receivers, NTRIP corrections and antenna height."),
+              "tag": qsTr("EXISTING ENGINE"),
+              "action": "settings"
+            },
+            {
+              "title": qsTr("Position averaging"),
+              "text": qsTr("Collect multiple observations for a more stable point."),
+              "tag": qsTr("FIELD"),
+              "action": "map"
+            },
+            {
+              "title": qsTr("Stakeout"),
+              "text": qsTr("Navigate to a point or feature with distance and bearing."),
+              "tag": qsTr("NAVIGATION"),
+              "action": "map"
+            },
+            {
+              "title": qsTr("Track recording"),
+              "text": qsTr("Record walking or vehicle tracks directly into a line layer."),
+              "tag": qsTr("OFFLINE"),
+              "action": "map"
+            },
+            {
+              "title": qsTr("Geometry capture"),
+              "text": qsTr("Points, lines and polygons with snapping and forms."),
+              "tag": qsTr("QGIS FORMS"),
+              "action": "map"
+            },
+            {
+              "title": qsTr("COGO & measurement"),
+              "text": qsTr("Distances, areas, bearings and construction geometry."),
+              "tag": qsTr("TOOLS"),
+              "action": "map"
+            }
           ]
           onActionRequested: action => root.handleFeatureAction(action)
         }
@@ -287,12 +479,42 @@ Item {
           title: qsTr("Maps and interoperable layers")
           subtitle: qsTr("Open field data directly and keep the original coordinate reference system.")
           entries: [
-            { "title": "GeoPackage", "text": qsTr("Vector layers, attributes and styles in a single offline file."), "tag": ".GPKG", "action": "local" },
-            { "title": "Shapefile / GeoJSON", "text": qsTr("Import common exchange formats for inspection or editing."), "tag": ".SHP · .GEOJSON", "action": "local" },
-            { "title": "KML / KMZ", "text": qsTr("Open overlays and data exchanged with field teams."), "tag": ".KML · .KMZ", "action": "local" },
-            { "title": "MBTiles", "text": qsTr("Use raster basemaps completely offline."), "tag": ".MBTILES", "action": "local" },
-            { "title": "WMS / WMTS", "text": qsTr("Connect institutional map services from a QGIS project."), "tag": qsTr("ONLINE"), "action": "settings" },
-            { "title": "XYZ / TMS", "text": qsTr("Use configurable web tiles and prepared offline caches."), "tag": qsTr("BASEMAP"), "action": "settings" }
+            {
+              "title": "GeoPackage",
+              "text": qsTr("Vector layers, attributes and styles in a single offline file."),
+              "tag": ".GPKG",
+              "action": "local"
+            },
+            {
+              "title": "Shapefile / GeoJSON",
+              "text": qsTr("Import common exchange formats for inspection or editing."),
+              "tag": ".SHP · .GEOJSON",
+              "action": "local"
+            },
+            {
+              "title": "KML / KMZ",
+              "text": qsTr("Open overlays and data exchanged with field teams."),
+              "tag": ".KML · .KMZ",
+              "action": "local"
+            },
+            {
+              "title": "MBTiles",
+              "text": qsTr("Use raster basemaps completely offline."),
+              "tag": ".MBTILES",
+              "action": "local"
+            },
+            {
+              "title": "WMS / WMTS",
+              "text": qsTr("Connect institutional map services from a QGIS project."),
+              "tag": qsTr("ONLINE"),
+              "action": "settings"
+            },
+            {
+              "title": "XYZ / TMS",
+              "text": qsTr("Use configurable web tiles and prepared offline caches."),
+              "tag": qsTr("BASEMAP"),
+              "action": "settings"
+            }
           ]
           onActionRequested: action => root.handleFeatureAction(action)
         }
@@ -305,8 +527,17 @@ Item {
             x: 30
             y: 30
             spacing: 18
-            Label { text: qsTr("Offline export and MEGA transfer queue"); color: navy; font.pixelSize: 28; font.bold: true }
-            Label { text: qsTr("Create an immutable archive containing the QGIS project, detected GeoPackages and attachments."); color: "#527086"; font.pixelSize: 14 }
+            Label {
+              text: qsTr("Offline export and MEGA transfer queue")
+              color: navy
+              font.pixelSize: 28
+              font.bold: true
+            }
+            Label {
+              text: qsTr("Create an immutable archive containing the QGIS project, detected GeoPackages and attachments.")
+              color: "#527086"
+              font.pixelSize: 14
+            }
 
             Rectangle {
               Layout.fillWidth: true
@@ -319,11 +550,25 @@ Item {
                 anchors.margins: 22
                 ColumnLayout {
                   spacing: 6
-                  Label { text: hasOpenProject ? QfFileUtils.fileName(qgisProject.fileName, false) : qsTr("No active project"); color: navy; font.pixelSize: 18; font.bold: true }
-                  Label { text: hasOpenProject ? qsTr("GeoPackage layers are detected automatically from the project.") : qsTr("Open a QGIS project before creating an export."); color: "#527086" }
-                  Label { text: qsTr("Destination: /TGP-FIELD/default/<project>/exports/"); color: blue; font.pixelSize: 11 }
+                  Label {
+                    text: hasOpenProject ? QfFileUtils.fileName(qgisProject.fileName, false) : qsTr("No active project")
+                    color: navy
+                    font.pixelSize: 18
+                    font.bold: true
+                  }
+                  Label {
+                    text: hasOpenProject ? qsTr("GeoPackage layers are detected automatically from the project.") : qsTr("Open a QGIS project before creating an export.")
+                    color: "#527086"
+                  }
+                  Label {
+                    text: qsTr("Destination: /TGP-FIELD/default/<project>/exports/")
+                    color: blue
+                    font.pixelSize: 11
+                  }
                 }
-                Item { Layout.fillWidth: true }
+                Item {
+                  Layout.fillWidth: true
+                }
                 Button {
                   text: qsTr("Create offline package")
                   highlighted: true
@@ -338,14 +583,28 @@ Item {
 
             RowLayout {
               Layout.fillWidth: true
-              Label { text: qsTr("Transfer queue"); color: navy; font.pixelSize: 17; font.bold: true }
-              Item { Layout.fillWidth: true }
+              Label {
+                text: qsTr("Transfer queue")
+                color: navy
+                font.pixelSize: 17
+                font.bold: true
+              }
+              Item {
+                Layout.fillWidth: true
+              }
               Button {
                 text: tgpField.cloudProvider.ready ? qsTr("Disconnect MEGA") : qsTr("Connect MEGA")
                 onClicked: tgpField.cloudProvider.ready ? tgpField.cloudProvider.logout() : megaLoginDialog.open()
               }
-              Button { text: qsTr("Retry pending"); enabled: tgpField.offlineExporter.pendingCount > 0; onClicked: tgpField.syncEngine.synchronize() }
-              Button { text: qsTr("Open export folder"); onClicked: Qt.openUrlExternally("file:///" + tgpField.offlineExporter.storageDirectory) }
+              Button {
+                text: qsTr("Retry pending")
+                enabled: tgpField.offlineExporter.pendingCount > 0
+                onClicked: tgpField.syncEngine.synchronize()
+              }
+              Button {
+                text: qsTr("Open export folder")
+                onClicked: Qt.openUrlExternally("file:///" + tgpField.offlineExporter.storageDirectory)
+              }
             }
 
             ListView {
@@ -364,15 +623,39 @@ Item {
                 RowLayout {
                   anchors.fill: parent
                   anchors.margins: 14
-                  Rectangle { Layout.preferredWidth: 10; Layout.preferredHeight: 10; radius: 5; color: modelData.state === "complete" ? actionGreen : modelData.state === "failed" ? "#B3261E" : "#CA9315" }
+                  Rectangle {
+                    Layout.preferredWidth: 10
+                    Layout.preferredHeight: 10
+                    radius: 5
+                    color: modelData.state === "complete" ? actionGreen : modelData.state === "failed" ? "#B3261E" : "#CA9315"
+                  }
                   ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 3
-                    Label { text: modelData.projectId; color: navy; font.bold: true }
-                    Label { Layout.fillWidth: true; text: modelData.remotePath; color: "#6A8192"; font.pixelSize: 10; elide: Text.ElideMiddle }
+                    Label {
+                      text: modelData.projectId
+                      color: navy
+                      font.bold: true
+                    }
+                    Label {
+                      Layout.fillWidth: true
+                      text: modelData.remotePath
+                      color: "#6A8192"
+                      font.pixelSize: 10
+                      elide: Text.ElideMiddle
+                    }
                   }
-                  Label { text: root.stateLabel(modelData.state); color: blue; font.bold: true; font.pixelSize: 12 }
-                  Button { visible: modelData.state === "failed"; text: qsTr("Retry"); onClicked: tgpField.syncEngine.retry(modelData.jobId) }
+                  Label {
+                    text: root.stateLabel(modelData.state)
+                    color: blue
+                    font.bold: true
+                    font.pixelSize: 12
+                  }
+                  Button {
+                    visible: modelData.state === "failed"
+                    text: qsTr("Retry")
+                    onClicked: tgpField.syncEngine.retry(modelData.jobId)
+                  }
                 }
               }
             }
@@ -384,7 +667,11 @@ Item {
               radius: 14
               color: "white"
               border.color: "#D4E1ED"
-              Label { anchors.centerIn: parent; text: qsTr("The export queue is empty."); color: "#6A8192" }
+              Label {
+                anchors.centerIn: parent
+                text: qsTr("The export queue is empty.")
+                color: "#6A8192"
+              }
             }
           }
         }
@@ -414,9 +701,7 @@ Item {
 
       Label {
         Layout.fillWidth: true
-        text: tgpField.cloudProvider.ready
-              ? qsTr("Connected as %1").arg(tgpField.cloudProvider.accountEmail)
-              : qsTr("Connect TGP-FIELD to your MEGA account.")
+        text: tgpField.cloudProvider.ready ? qsTr("Connected as %1").arg(tgpField.cloudProvider.accountEmail) : qsTr("Connect TGP-FIELD to your MEGA account.")
         color: root.navy
         font.pixelSize: 17
         font.bold: true
@@ -474,7 +759,9 @@ Item {
 
       RowLayout {
         Layout.fillWidth: true
-        Item { Layout.fillWidth: true }
+        Item {
+          Layout.fillWidth: true
+        }
         Button {
           text: qsTr("Close")
           onClicked: megaLoginDialog.close()
@@ -491,17 +778,15 @@ Item {
           visible: !tgpField.cloudProvider.ready
           text: tgpField.cloudProvider.authenticating ? qsTr("Connecting…") : qsTr("Connect")
           highlighted: true
-          enabled: tgpField.cloudProvider.sdkAvailable
-                   && !tgpField.cloudProvider.authenticating
-                   && megaEmail.text.trim() !== ""
-                   && megaPassword.text !== ""
+          enabled: tgpField.cloudProvider.sdkAvailable && !tgpField.cloudProvider.authenticating && megaEmail.text.trim() !== "" && megaPassword.text !== ""
           onClicked: megaLoginDialog.attemptLogin()
         }
       }
     }
 
     function attemptLogin() {
-      if (!tgpField.cloudProvider.sdkAvailable || tgpField.cloudProvider.authenticating) return;
+      if (!tgpField.cloudProvider.sdkAvailable || tgpField.cloudProvider.authenticating)
+        return;
       const password = megaPassword.text;
       megaPassword.text = "";
       tgpField.cloudProvider.login(megaEmail.text.trim(), password, rememberMegaSession.checked);
@@ -510,8 +795,12 @@ Item {
 
   Connections {
     target: tgpField.offlineExporter
-    function onExportQueued(jobId, archive) { mainWindow.displayToast(qsTr("Offline package created: %1").arg(QfFileUtils.fileName(QfUrlUtils.toLocalFile(archive)))); }
-    function onExportStateChanged(jobId, state, message) { mainWindow.displayToast(message); }
+    function onExportQueued(jobId, archive) {
+      mainWindow.displayToast(qsTr("Offline package created: %1").arg(QfFileUtils.fileName(QfUrlUtils.toLocalFile(archive))));
+    }
+    function onExportStateChanged(jobId, state, message) {
+      mainWindow.displayToast(message);
+    }
   }
 
   Connections {
@@ -519,7 +808,8 @@ Item {
     function onAuthenticationFinished(success, message) {
       megaPassword.text = "";
       mainWindow.displayToast(message);
-      if (success) megaLoginDialog.close();
+      if (success)
+        megaLoginDialog.close();
     }
   }
 
@@ -529,13 +819,23 @@ Item {
     } else if (action === "settings") {
       showSettings();
     } else if (action === "map") {
-      if (hasOpenProject) returnToMap();
-      else mainWindow.displayToast(qsTr("Open a project to use this field tool."));
+      if (hasOpenProject)
+        returnToMap();
+      else
+        mainWindow.displayToast(qsTr("Open a project to use this field tool."));
     }
   }
 
   function stateLabel(state) {
-    const labels = { "preparing": qsTr("Preparing"), "waiting_for_network": qsTr("Waiting for network"), "uploading": qsTr("Uploading"), "verifying": qsTr("Verifying"), "complete": qsTr("Complete"), "failed": qsTr("Failed"), "cancelled": qsTr("Cancelled") };
+    const labels = {
+      "preparing": qsTr("Preparing"),
+      "waiting_for_network": qsTr("Waiting for network"),
+      "uploading": qsTr("Uploading"),
+      "verifying": qsTr("Verifying"),
+      "complete": qsTr("Complete"),
+      "failed": qsTr("Failed"),
+      "cancelled": qsTr("Cancelled")
+    };
     return labels[state] || state;
   }
 }

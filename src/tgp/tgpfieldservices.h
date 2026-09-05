@@ -29,4 +29,4 @@ namespace Tgp
       std::unique_ptr<OfflineProjectExporter> mOfflineExporter;
       std::unique_ptr<SyncEngine> mSyncEngine;
   };
-}
+} // namespace Tgp
