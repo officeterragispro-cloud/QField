@@ -135,6 +135,42 @@ Page {
               width: 150
               implicitHeight: 95
               radius: 4
+              bgColor: "#DDE8D4"
+              previewImageSource: ""
+              projectTitle.text: qsTr("Google Satellite Hybrid")
+              showType: false
+              selected: basemapProviders.currentItem === this
+              fillHeight: true
+              showCustomizeIcon: false
+
+              property Component settings: Component {
+                Item {
+                  property string name: "google_satellite_hybrid"
+                  property string customSource: QfUrlUtils.createEncodedUrl({
+                    "type": "xyz",
+                    "url": "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+                    "zmin": 0,
+                    "zmax": 20
+                  })
+                  property string customProvider: "wms"
+                }
+              }
+
+              MouseArea {
+                anchors.fill: parent
+                onPressed: parent.isPressed = true
+                onReleased: parent.isPressed = false
+                onCanceled: parent.isPressed = false
+                onClicked: {
+                  Qt.inputMethod.hide();
+                  basemapProviders.currentIndex = parent.ObjectModel.index;
+                }
+              }
+            }
+            QfProjectThumbnail {
+              width: 150
+              implicitHeight: 95
+              radius: 4
               bgColor: QfTheme.groupBoxSurfaceColor
               previewImageSource: "qrc:/pictures/pictures/dark.jpg"
               projectTitle.text: qsTr("Darkgray")

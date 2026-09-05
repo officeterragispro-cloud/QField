@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QObject>
 #include <QByteArray>
+#include <QObject>
 #include <QString>
 #include <QUrl>
 #include <QVariantList>
@@ -10,10 +10,10 @@ namespace Tgp
 {
   struct CloudObject
   {
-    QString id;
-    QString path;
-    QByteArray sha256;
-    qint64 size = 0;
+      QString id;
+      QString path;
+      QByteArray sha256;
+      qint64 size = 0;
   };
 
   class CloudProvider : public QObject
@@ -39,4 +39,4 @@ namespace Tgp
       void transferProgress( const QString &objectId, qint64 completed, qint64 total );
       void transferFinished( const QString &objectId, bool success, const QString &message );
   };
-}
+} // namespace Tgp

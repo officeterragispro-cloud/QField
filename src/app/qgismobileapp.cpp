@@ -87,6 +87,7 @@
 #include "qgsprovidersublayerdetails.h"
 #include "qgsquickmapcanvasmap.h"
 #include "qgsquickmapsettings.h"
+#include "tgpfieldservices.h"
 
 #include <QDateTime>
 #include <QDesktopServices>
@@ -144,7 +145,6 @@
 #include <qgsvectorlayer.h>
 #include <qgsvectorlayertemporalproperties.h>
 #include <qgsvectortilelayer.h>
-#include "tgpfieldservices.h"
 
 
 #define QUOTE( string ) _QUOTE( string )
