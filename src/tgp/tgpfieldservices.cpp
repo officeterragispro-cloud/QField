@@ -8,7 +8,7 @@ using namespace Tgp;
 
 TgpFieldServices::TgpFieldServices( const QString &storageDirectory, QObject *parent )
   : QObject( parent )
-  , mCloudProvider( std::make_unique<MegaCloudProvider>() )
+  , mCloudProvider( std::make_unique<MegaCloudProvider>( storageDirectory ) )
   , mOfflineExporter( std::make_unique<OfflineProjectExporter>( storageDirectory ) )
   , mSyncEngine( std::make_unique<SyncEngine>( mOfflineExporter->queue(), mCloudProvider.get() ) )
 {

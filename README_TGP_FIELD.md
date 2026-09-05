@@ -27,6 +27,10 @@ rămâne în coada persistentă până la confirmarea transferului.
 
 Codul se află în `src/tgp/` și este construit ca biblioteca statică `tgp_sync`.
 Aplicația o expune în QML prin obiectul `tgpField`, cu proprietățile
-`offlineExporter`, `syncEngine` și `cloudProvider`. Adaptorul MEGA este o limită
-sigură și rămâne indisponibil până la legarea SDK-ului oficial și configurarea
-autentificării.
+`offlineExporter`, `syncEngine` și `cloudProvider`. Adaptorul MEGA oferă acum
+formular de conectare, reluarea unei sesiuni criptate și deconectare. El rămâne
+dezactivat în buildurile fără SDK-ul oficial și fără un App Key TGP-FIELD.
+
+Parola MEGA nu este scrisă în fișiere, setări sau Git. După autentificare,
+doar sesiunea returnată de SDK poate fi păstrată prin `QgsAuthManager`, care
+folosește mecanismul securizat al platformei configurat deja de QField.

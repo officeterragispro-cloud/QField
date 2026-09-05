@@ -38,4 +38,20 @@ Installerul folosește numele, furnizorul, pictograma și GUID-ul de upgrade pro
 
 ## Limită curentă
 
-Adaptorul MEGA este separat de interfață și coadă. Exportul local este funcțional, dar uploadul remote rămâne blocat explicit până la legarea SDK-ului oficial MEGA și configurarea autentificării securizate. Aplicația nu raportează un transfer ca reușit înainte de confirmarea furnizorului.
+Adaptorul MEGA este separat de interfață și coadă. Ecranul Windows permite
+configurarea contului, afișează dacă SDK-ul este inclus și poate păstra doar
+sesiunea criptată prin managerul de autentificare QGIS/QField. Exportul local
+este funcțional, dar uploadul remote rămâne blocat explicit până la etapa de
+transfer SDK. Aplicația nu raportează un transfer ca reușit înainte de
+confirmarea furnizorului.
+
+Pentru un build cu SDK oficial:
+
+```text
+-D TGP_WITH_MEGA_SDK=ON
+-D TGP_MEGA_SDK_SOURCE_DIR=<director-sdk-mega>
+-D TGP_MEGA_APP_KEY=<app-key-tgp-field>
+```
+
+App Key-ul identifică aplicația TGP-FIELD și se obține din pagina MEGA pentru
+dezvoltatori. Nu se folosesc credențiale de cont în comenzile de build.

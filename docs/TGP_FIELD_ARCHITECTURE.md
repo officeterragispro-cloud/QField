@@ -46,9 +46,16 @@ flowchart TD
 Stările stabile ale unui export sunt: `preparing`, `waiting_for_network`,
 `uploading`, `verifying`, `complete`, `failed` și `cancelled`.
 
-În această etapă `MegaCloudProvider::isReady()` întoarce `false`. Astfel,
-interfața nu poate pretinde că a încărcat date înainte ca SDK-ul MEGA,
-autentificarea și verificarea remote să fie implementate.
+`MegaCloudProvider` are două moduri de compilare. Implicit, `sdkAvailable` este
+`false`, iar interfața explică faptul că installerul nu include SDK-ul. Cu
+`TGP_WITH_MEGA_SDK=ON`, adaptorul folosește ținta oficială `MEGA::SDKlib`, cere
+un App Key la build, autentifică utilizatorul și reia sesiunea salvată.
+Parola există doar pe durata apelului de login; nu este persistentă.
+
+Sesiunea MEGA este păstrată prin `QgsAuthManager`, iar în `QSettings` rămâne
+doar identificatorul configurației securizate și adresa de email. Uploadul și
+crearea automată a arborelui remote rămân etapa următoare; interfața nu marchează
+un transfer ca finalizat înainte de implementarea și confirmarea SDK.
 
 ### CloudProvider
 
@@ -111,7 +118,7 @@ Se păstrează separat snapshotul local până când MEGA confirmă transferul �
 
 1. Branding, package/bundle ID și build-uri semnate.
 2. Ecran Proiectele mele + import/export ZIP local.
-3. Adaptor MEGA și sincronizare snapshot pentru un singur utilizator.
+3. Adaptor MEGA, autentificare securizată și sincronizare snapshot pentru un singur utilizator.
 4. Jurnal incremental, coadă offline și reluarea transferurilor.
 5. Colaborare multi-utilizator, conflicte GeoPackage și istoric.
 6. Portal web TGP pentru administrare, roluri și audit.

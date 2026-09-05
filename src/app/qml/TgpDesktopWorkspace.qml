@@ -118,7 +118,7 @@ Item {
         Rectangle {
           Layout.fillWidth: true
           Layout.margins: 14
-          Layout.preferredHeight: 94
+          Layout.preferredHeight: 122
           radius: 12
           color: "#123B61"
           Column {
@@ -132,6 +132,14 @@ Item {
               Label { text: tgpField.cloudProvider.ready ? qsTr("MEGA connected") : qsTr("MEGA not configured"); color: "white"; font.pixelSize: 13; font.bold: true }
             }
             Label { text: qsTr("%n transfer(s) pending", "", tgpField.offlineExporter.pendingCount); color: "#ACD1EC"; font.pixelSize: 11 }
+            Button {
+              width: parent.width
+              height: 28
+              flat: true
+              text: tgpField.cloudProvider.ready ? qsTr("Account settings") : qsTr("Configure MEGA")
+              palette.buttonText: "white"
+              onClicked: megaLoginDialog.open()
+            }
           }
         }
 
@@ -332,6 +340,10 @@ Item {
               Layout.fillWidth: true
               Label { text: qsTr("Transfer queue"); color: navy; font.pixelSize: 17; font.bold: true }
               Item { Layout.fillWidth: true }
+              Button {
+                text: tgpField.cloudProvider.ready ? qsTr("Disconnect MEGA") : qsTr("Connect MEGA")
+                onClicked: tgpField.cloudProvider.ready ? tgpField.cloudProvider.logout() : megaLoginDialog.open()
+              }
               Button { text: qsTr("Retry pending"); enabled: tgpField.offlineExporter.pendingCount > 0; onClicked: tgpField.syncEngine.synchronize() }
               Button { text: qsTr("Open export folder"); onClicked: Qt.openUrlExternally("file:///" + tgpField.offlineExporter.storageDirectory) }
             }
@@ -380,10 +392,135 @@ Item {
     }
   }
 
+  Dialog {
+    id: megaLoginDialog
+    parent: Overlay.overlay
+    anchors.centerIn: parent
+    width: Math.min(460, root.width - 40)
+    modal: true
+    focus: true
+    title: qsTr("MEGA account")
+    standardButtons: Dialog.NoButton
+
+    onOpened: {
+      megaEmail.text = tgpField.cloudProvider.accountEmail;
+      megaPassword.text = "";
+      megaEmail.forceActiveFocus();
+    }
+
+    ColumnLayout {
+      width: parent.width
+      spacing: 14
+
+      Label {
+        Layout.fillWidth: true
+        text: tgpField.cloudProvider.ready
+              ? qsTr("Connected as %1").arg(tgpField.cloudProvider.accountEmail)
+              : qsTr("Connect TGP-FIELD to your MEGA account.")
+        color: root.navy
+        font.pixelSize: 17
+        font.bold: true
+        wrapMode: Text.WordWrap
+      }
+
+      Rectangle {
+        visible: !tgpField.cloudProvider.sdkAvailable
+        Layout.fillWidth: true
+        Layout.preferredHeight: sdkMessage.implicitHeight + 24
+        radius: 8
+        color: "#FFF4D6"
+        border.color: "#E2B84B"
+        Label {
+          id: sdkMessage
+          anchors.fill: parent
+          anchors.margins: 12
+          text: qsTr("This build does not include the MEGA SDK yet. Account details cannot be submitted.")
+          color: "#6E4C00"
+          wrapMode: Text.WordWrap
+        }
+      }
+
+      TextField {
+        id: megaEmail
+        Layout.fillWidth: true
+        visible: !tgpField.cloudProvider.ready
+        placeholderText: qsTr("MEGA email")
+        inputMethodHints: Qt.ImhEmailCharactersOnly | Qt.ImhNoAutoUppercase
+      }
+
+      TextField {
+        id: megaPassword
+        Layout.fillWidth: true
+        visible: !tgpField.cloudProvider.ready
+        placeholderText: qsTr("Password")
+        echoMode: TextInput.Password
+        inputMethodHints: Qt.ImhSensitiveData | Qt.ImhNoPredictiveText
+        onAccepted: megaLoginDialog.attemptLogin()
+      }
+
+      CheckBox {
+        id: rememberMegaSession
+        visible: !tgpField.cloudProvider.ready
+        checked: true
+        text: qsTr("Keep the encrypted session on this device")
+      }
+
+      Label {
+        Layout.fillWidth: true
+        text: tgpField.cloudProvider.statusMessage
+        color: "#527086"
+        wrapMode: Text.WordWrap
+      }
+
+      RowLayout {
+        Layout.fillWidth: true
+        Item { Layout.fillWidth: true }
+        Button {
+          text: qsTr("Close")
+          onClicked: megaLoginDialog.close()
+        }
+        Button {
+          visible: tgpField.cloudProvider.ready
+          text: qsTr("Disconnect")
+          onClicked: {
+            tgpField.cloudProvider.logout();
+            megaLoginDialog.close();
+          }
+        }
+        Button {
+          visible: !tgpField.cloudProvider.ready
+          text: tgpField.cloudProvider.authenticating ? qsTr("Connecting…") : qsTr("Connect")
+          highlighted: true
+          enabled: tgpField.cloudProvider.sdkAvailable
+                   && !tgpField.cloudProvider.authenticating
+                   && megaEmail.text.trim() !== ""
+                   && megaPassword.text !== ""
+          onClicked: megaLoginDialog.attemptLogin()
+        }
+      }
+    }
+
+    function attemptLogin() {
+      if (!tgpField.cloudProvider.sdkAvailable || tgpField.cloudProvider.authenticating) return;
+      const password = megaPassword.text;
+      megaPassword.text = "";
+      tgpField.cloudProvider.login(megaEmail.text.trim(), password, rememberMegaSession.checked);
+    }
+  }
+
   Connections {
     target: tgpField.offlineExporter
     function onExportQueued(jobId, archive) { mainWindow.displayToast(qsTr("Offline package created: %1").arg(QfFileUtils.fileName(QfUrlUtils.toLocalFile(archive)))); }
     function onExportStateChanged(jobId, state, message) { mainWindow.displayToast(message); }
+  }
+
+  Connections {
+    target: tgpField.cloudProvider
+    function onAuthenticationFinished(success, message) {
+      megaPassword.text = "";
+      mainWindow.displayToast(message);
+      if (success) megaLoginDialog.close();
+    }
   }
 
   function handleFeatureAction(action) {
