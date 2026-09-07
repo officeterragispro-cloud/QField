@@ -14,6 +14,17 @@
   "dependencies": [
     "catch2",
     {
+      "name": "cryptopp",
+      "platform": "windows | android"
+    },
+    {
+      "name": "curl",
+      "features": [
+        "zstd"
+      ],
+      "platform": "windows | android"
+    },
+    {
       "name": "ffmpeg",
       "default-features": false,
       "features": [
@@ -32,6 +43,14 @@
     {
       "name": "gdal",
       "default-features": false
+    },
+    {
+      "name": "icu",
+      "platform": "windows | android"
+    },
+    {
+      "name": "libsodium",
+      "platform": "windows | android"
     },
     "nu-book-zxing-cpp",
     {
@@ -128,6 +147,10 @@
       "platform": "osx | linux | (windows & !arm & !uwp)"
     },
     "spix-qt6",
+    {
+      "name": "sqlite3",
+      "platform": "windows | android"
+    },
     {
       "name": "tiff",
       "features": [
