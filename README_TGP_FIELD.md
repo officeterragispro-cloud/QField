@@ -34,3 +34,17 @@ dezactivat în buildurile fără SDK-ul oficial și fără un App Key TGP-FIELD.
 Parola MEGA nu este scrisă în fișiere, setări sau Git. După autentificare,
 doar sesiunea returnată de SDK poate fi păstrată prin `QgsAuthManager`, care
 folosește mecanismul securizat al platformei configurat deja de QField.
+
+## Activarea conexiunii MEGA în installere
+
+1. Creează o aplicație TGP-FIELD în portalul MEGA Developers și copiază App Key-ul.
+2. În repository-ul GitHub, deschide **Settings → Secrets and variables → Actions**.
+3. Creează secretul de repository `TGP_MEGA_APP_KEY` și introdu App Key-ul, nu
+   parola contului MEGA.
+4. Rulează din nou workflow-urile **Windows** și **Android**.
+
+Workflow-urile descarcă SDK-ul oficial MEGA `v9.16.1` și activează autentificarea
+numai când secretul există. Dacă lipsește, installerele se construiesc în
+continuare, dar interfața va raporta că SDK-ul MEGA nu este inclus. Conectarea și
+reluarea sesiunii sunt implementate; uploadul arhivei de proiect este o etapă
+separată și nu este încă funcțional.
