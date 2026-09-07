@@ -29,22 +29,64 @@ if(TGP_WITH_MEGA_SDK)
   if(TGP_MEGA_SDK_SOURCE_DIR AND NOT TARGET MEGA::SDKlib)
     # TGP-FIELD only needs the MEGA cloud API. Keep the embedded SDK small and
     # avoid optional media, chat, sync-engine and language binding dependencies.
-    set(ENABLE_SYNC OFF CACHE BOOL "" FORCE)
-    set(ENABLE_CHAT OFF CACHE BOOL "" FORCE)
-    set(USE_FREEIMAGE OFF CACHE BOOL "" FORCE)
-    set(USE_FFMPEG OFF CACHE BOOL "" FORCE)
-    set(USE_LIBUV OFF CACHE BOOL "" FORCE)
-    set(USE_PDFIUM OFF CACHE BOOL "" FORCE)
-    set(USE_READLINE OFF CACHE BOOL "" FORCE)
-    set(ENABLE_JAVA_BINDINGS OFF CACHE BOOL "" FORCE)
-    set(ENABLE_QT_BINDINGS OFF CACHE BOOL "" FORCE)
-    set(ENABLE_MEDIA_FILE_METADATA OFF CACHE BOOL "" FORCE)
-    set(ENABLE_ISOLATED_GFX OFF CACHE BOOL "" FORCE)
-    set(ENABLE_SDKLIB_EXAMPLES OFF CACHE BOOL "" FORCE)
-    set(ENABLE_SDKLIB_TESTS OFF CACHE BOOL "" FORCE)
-    set(ENABLE_SDKLIB_WERROR OFF CACHE BOOL "" FORCE)
+    if(ANDROID)
+      # MEGA SDK v9.16.1 requires its filesystem sync primitives on Android.
+      set(ENABLE_SYNC
+          ON
+          CACHE BOOL "" FORCE)
+    else()
+      set(ENABLE_SYNC
+          OFF
+          CACHE BOOL "" FORCE)
+    endif()
+    set(ENABLE_CHAT
+        OFF
+        CACHE BOOL "" FORCE)
+    set(USE_FREEIMAGE
+        OFF
+        CACHE BOOL "" FORCE)
+    set(USE_FFMPEG
+        OFF
+        CACHE BOOL "" FORCE)
+    set(USE_LIBUV
+        OFF
+        CACHE BOOL "" FORCE)
+    set(USE_PDFIUM
+        OFF
+        CACHE BOOL "" FORCE)
+    set(USE_READLINE
+        OFF
+        CACHE BOOL "" FORCE)
+    set(ENABLE_JAVA_BINDINGS
+        OFF
+        CACHE BOOL "" FORCE)
+    set(ENABLE_QT_BINDINGS
+        OFF
+        CACHE BOOL "" FORCE)
+    set(ENABLE_MEDIA_FILE_METADATA
+        OFF
+        CACHE BOOL "" FORCE)
+    set(ENABLE_ISOLATED_GFX
+        OFF
+        CACHE BOOL "" FORCE)
+    set(ENABLE_SDKLIB_EXAMPLES
+        OFF
+        CACHE BOOL "" FORCE)
+    set(ENABLE_SDKLIB_TESTS
+        OFF
+        CACHE BOOL "" FORCE)
+    set(ENABLE_SDKLIB_WERROR
+        OFF
+        CACHE BOOL "" FORCE)
     if(WIN32 OR ANDROID)
-      set(USE_OPENSSL ON CACHE BOOL "" FORCE)
+      set(USE_OPENSSL
+          ON
+          CACHE BOOL "" FORCE)
+    endif()
+    if(WIN32 AND CMAKE_GENERATOR MATCHES "Ninja")
+      # Avoid propagating vcpkg's Visual Studio toolset into MEGA try_compile.
+      unset(CMAKE_GENERATOR_TOOLSET CACHE)
+      unset(CMAKE_GENERATOR_TOOLSET)
     endif()
 
     add_subdirectory("${TGP_MEGA_SDK_SOURCE_DIR}"
