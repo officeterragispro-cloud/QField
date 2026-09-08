@@ -12,3 +12,9 @@ set(STATIC_PORTS
     qgis
     poppler
 )
+
+# androiddeployqt rejects ICU's versioned shared-library names (for example
+# libicudata.so.78). MEGA SDK links ICU statically in Android builds instead.
+if(DEFINED ENV{ANDROID_NDK_HOME})
+  list(APPEND STATIC_PORTS icu)
+endif()
