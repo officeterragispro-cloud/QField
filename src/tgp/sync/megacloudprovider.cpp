@@ -44,7 +44,7 @@ class MegaCloudProviderPrivate final : public mega::MegaRequestListener
 
     void logout()
     {
-      api->logout( this );
+      api->logout( false, this );
     }
 
     void onRequestFinish( mega::MegaApi *, mega::MegaRequest *request, mega::MegaError *error ) override
