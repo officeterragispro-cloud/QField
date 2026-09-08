@@ -90,14 +90,13 @@ if(TGP_WITH_MEGA_SDK)
     endif()
 
     # QField treats its own warnings as errors. Do not apply that policy to the
-    # third-party MEGA SDK, whose supported clang-cl build emits benign warnings.
-    set(TGP_SAVED_COMPILE_WARNING_AS_ERROR
-        "${CMAKE_COMPILE_WARNING_AS_ERROR}")
+    # third-party MEGA SDK, whose supported clang-cl build emits benign
+    # warnings.
+    set(TGP_SAVED_COMPILE_WARNING_AS_ERROR "${CMAKE_COMPILE_WARNING_AS_ERROR}")
     set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
     add_subdirectory("${TGP_MEGA_SDK_SOURCE_DIR}"
                      "${CMAKE_BINARY_DIR}/mega-sdk" EXCLUDE_FROM_ALL)
-    set(CMAKE_COMPILE_WARNING_AS_ERROR
-        "${TGP_SAVED_COMPILE_WARNING_AS_ERROR}")
+    set(CMAKE_COMPILE_WARNING_AS_ERROR "${TGP_SAVED_COMPILE_WARNING_AS_ERROR}")
     unset(TGP_SAVED_COMPILE_WARNING_AS_ERROR)
   endif()
 
