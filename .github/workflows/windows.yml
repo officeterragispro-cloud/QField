@@ -50,19 +50,7 @@ jobs:
         run: |
           if [ -n "${TGP_MEGA_APP_KEY}" ]; then
             git clone --depth 1 --branch v9.16.1 https://github.com/meganz/sdk.git "${GITHUB_WORKSPACE}/.deps/mega-sdk"
-            python - <<'PY'
-            import os
-            from pathlib import Path
-
-            path = Path(os.environ["GITHUB_WORKSPACE"]) / ".deps/mega-sdk/cmake/modules/configuration.cmake"
-            source = path.read_text(encoding="utf-8")
-            check = """try_compile(HAVE_DISTINCT_TIME_T
-                        "${CMAKE_BINARY_DIR}"
-                        "${CMAKE_CURRENT_LIST_DIR}/checks/has_distinct_time_t.cpp")"""
-            if check not in source:
-                raise SystemExit("MEGA SDK time_t check block was not found")
-            path.write_text(source.replace(check, "set(HAVE_DISTINCT_TIME_T FALSE)"), encoding="utf-8")
-            PY
+            sed -i '/^try_compile(HAVE_DISTINCT_TIME_T$/,/has_distinct_time_t.cpp")$/c\\set(HAVE_DISTINCT_TIME_T FALSE)' "${GITHUB_WORKSPACE}/.deps/mega-sdk/cmake/modules/configuration.cmake"
             echo "TGP_WITH_MEGA_SDK=ON" >> "${GITHUB_ENV}"
             echo "TGP_MEGA_SDK_SOURCE_DIR=${GITHUB_WORKSPACE}/.deps/mega-sdk" >> "${GITHUB_ENV}"
           else
