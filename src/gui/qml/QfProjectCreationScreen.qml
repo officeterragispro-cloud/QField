@@ -510,7 +510,6 @@ Page {
       QfExpandableGroupBox {
         id: qfieldCloudGroupBox
         visible: false
-        checked: false
         title: qsTr("Backup & collaborate?")
         width: parent.width
         checked: false
