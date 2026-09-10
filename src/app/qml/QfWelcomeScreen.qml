@@ -549,7 +549,7 @@ Page {
               width: welcomeActionsContainer.itemWidth
               iconSource: QfTheme.getThemeVectorIcon("ic_cloud_active_24dp")
               iconColor: QfTheme.cloudColor
-              label: qsTr("QFieldCloud\nprojects")
+              label: qsTr("TGP Cloud\nMEGA")
               onClicked: showQFieldCloudScreen()
             }
 
