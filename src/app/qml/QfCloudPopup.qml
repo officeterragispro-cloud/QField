@@ -44,7 +44,7 @@ Popup {
         case 2:
           return qsTr('Local changes');
         default:
-          return qsTr('QFieldCloud');
+          return qsTr('TGP Cloud');
         }
       }
 
@@ -381,30 +381,30 @@ Popup {
             Layout.alignment: Qt.AlignHCenter
             spacing: 10
 
-            readonly property bool isCloudifying: cloudProjectsModel.isCreating || !!cloudProjectCreationConnection.target
-            readonly property real cloudifyProgress: cloudProjectCreationConnection.target ? cloudProjectCreationConnection.target.uploadProgress : 0
-
             QfContainerCard {
               id: cloudifyCard
               Layout.fillWidth: true
               accentColor: QfTheme.cloudColor
               iconSource: QfTheme.getThemeVectorIcon('ic_cloud_active_24dp')
-              title: qsTr('Cloudify project')
-              description: localProjectGrid.isCloudifying ? qsTr('Uploading the current project to QFieldCloud.') : qsTr('The current project is not stored on QFieldCloud. Storing projects on QFieldCloud offers seamless synchronization, offline editing, and team management.') + (Qt.platform.os !== "ios" ? ' <a href="https://qfield.cloud/">' + qsTr('Learn more about QFieldCloud') + '</a>.' : '')
+              title: qsTr('TGP Cloud')
+              description: tgpField.cloudProvider.ready ? qsTr('Create a complete offline package of the QGIS project, GeoPackages and attachments, then add it to the MEGA transfer queue.') : qsTr('TGP Cloud uses your MEGA account. Connect MEGA to export and synchronize this project.')
 
               QfButton {
                 Layout.fillWidth: true
                 Layout.topMargin: 4
                 bgcolor: QfTheme.cloudColor
                 color: QfTheme.light
-                text: localProjectGrid.isCloudifying ? (localProjectGrid.cloudifyProgress > 0 ? qsTr('Cloudifying %1%').arg(Math.round(localProjectGrid.cloudifyProgress * 100)) : qsTr('Cloudifying')) : qsTr('Cloudify project')
-                enabled: !localProjectGrid.isCloudifying
-                showProgress: localProjectGrid.isCloudifying
-                progressValue: localProjectGrid.cloudifyProgress
+                text: tgpField.syncEngine.busy ? qsTr('Synchronizing…') : (tgpField.cloudProvider.ready ? qsTr('Export and send to MEGA') : qsTr('Connect MEGA'))
+                enabled: !tgpField.syncEngine.busy
+                showProgress: tgpField.syncEngine.busy
 
                 onClicked: {
-                  if (qgisProject.fileName != "") {
-                    cloudify(QfProjectUtils.title(qgisProject), QfFileUtils.absolutePath(qgisProject.fileName));
+                  if (!tgpField.cloudProvider.ready) {
+                    tgpMegaLoginDialog.open();
+                  } else if (qgisProject.fileName != "") {
+                    const projectId = QfFileUtils.fileName(qgisProject.fileName, false);
+                    tgpField.offlineExporter.enqueueCurrentProject(qgisProject, projectId, "default", true);
+                    tgpField.syncEngine.synchronize();
                   }
                 }
               }
@@ -1097,6 +1097,73 @@ Popup {
   function resetCurrentProject() {
     cloudProjectsModel.discardLocalChangesFromCurrentProject(cloudProjectsModel.currentProjectId);
     cloudProjectsModel.projectPackageAndDownload(cloudProjectsModel.currentProjectId);
+  }
+
+  Dialog {
+    id: tgpMegaLoginDialog
+    parent: Overlay.overlay
+    modal: true
+    title: qsTr("Connect TGP Cloud to MEGA")
+    standardButtons: Dialog.Ok | Dialog.Cancel
+
+    onOpened: {
+      tgpMegaEmail.text = tgpField.cloudProvider.accountEmail;
+      tgpMegaPassword.text = "";
+      tgpMegaEmail.forceActiveFocus();
+    }
+    onAccepted: {
+      const password = tgpMegaPassword.text;
+      tgpMegaPassword.text = "";
+      tgpField.cloudProvider.login(tgpMegaEmail.text.trim(), password, tgpRememberMegaSession.checked);
+    }
+
+    ColumnLayout {
+      spacing: 10
+
+      Label {
+        Layout.preferredWidth: 360
+        wrapMode: Text.WordWrap
+        text: qsTr("Sign in to the MEGA account used by TGP Cloud. Your password is sent directly to the MEGA SDK and is not stored by TGP-FIELD.")
+      }
+
+      TextField {
+        id: tgpMegaEmail
+        Layout.fillWidth: true
+        placeholderText: qsTr("MEGA email")
+        inputMethodHints: Qt.ImhEmailCharactersOnly | Qt.ImhNoAutoUppercase
+      }
+
+      TextField {
+        id: tgpMegaPassword
+        Layout.fillWidth: true
+        placeholderText: qsTr("MEGA password")
+        echoMode: TextInput.Password
+        onAccepted: tgpMegaLoginDialog.accept()
+      }
+
+      CheckBox {
+        id: tgpRememberMegaSession
+        text: qsTr("Remember this session securely")
+        checked: true
+      }
+
+      Label {
+        Layout.preferredWidth: 360
+        wrapMode: Text.WordWrap
+        color: QfTheme.secondaryTextColor
+        text: tgpField.cloudProvider.statusMessage
+      }
+    }
+  }
+
+  Connections {
+    target: tgpField.cloudProvider
+
+    function onAuthenticationFinished(success, message) {
+      if (success)
+        tgpMegaLoginDialog.close();
+      mainWindow.displayToast(message);
+    }
   }
 
   function cloudify(title, path) {
