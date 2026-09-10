@@ -5385,8 +5385,7 @@ ApplicationWindow {
     }
 
     onShowQFieldCloudScreen: {
-      qfieldCloudStatus.refresh();
-      qfieldCloudScreen.visible = true;
+      openCloudPopup();
     }
 
     onShowSettings: {
