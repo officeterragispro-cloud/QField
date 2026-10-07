@@ -95,19 +95,38 @@ jobs:
         shell: bash
         run: |
           NDK_VERSION=28.2.13676358
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:?Android SDK location is not set}}"
+          echo "ANDROID_SDK_ROOT=${SDK_ROOT}" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=${SDK_ROOT}" >> "$GITHUB_ENV"
           echo "JAVA_HOME=${JAVA_HOME_17_X64}" >> $GITHUB_ENV
           echo "ANDROID_BUILD_TOOLS_VERSION=35.0.1" >> $GITHUB_ENV
           echo "ANDROID_NDK_VERSION=${NDK_VERSION}" >> $GITHUB_ENV
-          echo "ANDROID_NDK=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}" >> $GITHUB_ENV
-          echo "ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}" >> $GITHUB_ENV
-          echo "ANDROID_NDK_ROOT=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}" >> $GITHUB_ENV
-          echo "ndk.dir=/usr/local/lib/android/sdk/ndk/${NDK_VERSION}" >> local.properties
+          echo "ANDROID_NDK=${SDK_ROOT}/ndk/${NDK_VERSION}" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=${SDK_ROOT}/ndk/${NDK_VERSION}" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=${SDK_ROOT}/ndk/${NDK_VERSION}" >> $GITHUB_ENV
+          echo "ndk.dir=${SDK_ROOT}/ndk/${NDK_VERSION}" >> local.properties
           ALL_FILES_ACCESS=${{ matrix.all_files_access }} ./scripts/ci/env_gh.sh
 
           BUILD_ROOT="/home/runner"
           echo "BUILD_ROOT=${BUILD_ROOT}" >> $GITHUB_ENV
           echo "BUILD_TYPE=Release" >> $GITHUB_ENV
           echo "CMAKE_BUILD_DIR=${BUILD_ROOT}/builddir" >> $GITHUB_ENV
+
+      - name: Install and verify Android NDK
+        shell: bash
+        run: |
+          SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+          test -x "${SDKMANAGER}"
+          # Ignore SIGPIPE from yes, while preserving sdkmanager failures.
+          set +o pipefail
+          yes | "${SDKMANAGER}" --sdk_root="${ANDROID_SDK_ROOT}" --licenses > /dev/null
+          set -o pipefail
+          "${SDKMANAGER}" --sdk_root="${ANDROID_SDK_ROOT}" --install \
+            "ndk;${ANDROID_NDK_VERSION}" \
+            "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
+          test -f "${ANDROID_NDK}/build/cmake/android.toolchain.cmake"
+          test -x "${ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang"
+          test -x "${ANDROID_SDK_ROOT}/build-tools/${ANDROID_BUILD_TOOLS_VERSION}/aapt"
 
       - name: 💎 Setup ruby
         uses: ruby/setup-ruby@v1.321.0
