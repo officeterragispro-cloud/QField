@@ -1,10 +1,16 @@
 #include "megacloudprovider.h"
 
+#include <QCryptographicHash>
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QMetaObject>
 #include <QSettings>
+#include <QStringList>
 #include <qgsapplication.h>
 #include <qgsauthmanager.h>
+
+#include <utility>
 
 #ifdef TGP_WITH_MEGA_SDK
 #include <megaapi.h>
@@ -20,7 +26,7 @@ namespace
 } // namespace
 
 #ifdef TGP_WITH_MEGA_SDK
-class MegaCloudProviderPrivate final : public mega::MegaRequestListener
+class MegaCloudProviderPrivate final : public mega::MegaRequestListener, public mega::MegaTransferListener
 {
   public:
     MegaCloudProviderPrivate( MegaCloudProvider *owner, const QString &storageDirectory )
@@ -29,6 +35,60 @@ class MegaCloudProviderPrivate final : public mega::MegaRequestListener
       const QString cacheDirectory = QDir( storageDirectory ).filePath( QStringLiteral( "mega-sdk" ) );
       QDir().mkpath( cacheDirectory );
       api = std::make_unique<mega::MegaApi>( TGP_MEGA_APP_KEY, cacheDirectory.toUtf8().constData(), "TGP-FIELD/1.0" );
+    }
+
+    ~MegaCloudProviderPrivate() override
+    {
+      // Stop SDK callbacks before destroying the state used by the listeners.
+      api.reset();
+    }
+
+    bool uploading() const
+    {
+      return !uploadId.isEmpty();
+    }
+
+    void upload( const QString &objectId, const QString &remotePath, const QString &localPath )
+    {
+      uploadId = objectId;
+      uploadSource = localPath;
+      uploadParts = remotePath.split( QLatin1Char( '/' ), Qt::SkipEmptyParts );
+      uploadName = uploadParts.takeLast();
+      folderIndex = 0;
+      std::unique_ptr<mega::MegaNode> root( api->getRootNode() );
+      if ( !root )
+      {
+        finishUpload( false, MegaCloudProvider::tr( "MEGA cloud drive is unavailable. Reconnect and retry." ) );
+        return;
+      }
+      parentHandle = root->getHandle();
+      advanceUpload();
+    }
+
+    void onTransferUpdate( mega::MegaApi *, mega::MegaTransfer *transfer ) override
+    {
+      const QString id = QString::fromUtf8( transfer->getAppData() );
+      const qint64 completed = transfer->getTransferredBytes();
+      const qint64 total = transfer->getTotalBytes();
+      QMetaObject::invokeMethod(
+        q, [this, id, completed, total]() {
+          if ( id == uploadId )
+            emit q->transferProgress( id, completed, total );
+        },
+        Qt::QueuedConnection );
+    }
+
+    void onTransferFinish( mega::MegaApi *, mega::MegaTransfer *transfer, mega::MegaError *error ) override
+    {
+      const QString id = QString::fromUtf8( transfer->getAppData() );
+      const bool success = error->getErrorCode() == mega::MegaError::API_OK;
+      const QString message = success ? MegaCloudProvider::tr( "Archive uploaded to MEGA." ) : QString::fromUtf8( error->getErrorString() );
+      QMetaObject::invokeMethod(
+        q, [this, id, success, message]() {
+          if ( id == uploadId )
+            finishUpload( success, message );
+        },
+        Qt::QueuedConnection );
     }
 
     void login( const QString &email, const QString &password )
@@ -56,6 +116,26 @@ class MegaCloudProviderPrivate final : public mega::MegaRequestListener
       const int requestType = request->getType();
       const bool success = error->getErrorCode() == mega::MegaError::API_OK;
       const QString errorMessage = QString::fromUtf8( error->getErrorString() );
+
+      if ( requestType == mega::MegaRequest::TYPE_CREATE_FOLDER )
+      {
+        const auto handle = request->getNodeHandle();
+        QMetaObject::invokeMethod(
+          q, [this, success, errorMessage, handle]() {
+            if ( uploadId.isEmpty() )
+              return;
+            if ( !success )
+            {
+              finishUpload( false, errorMessage );
+              return;
+            }
+            parentHandle = handle;
+            ++folderIndex;
+            advanceUpload();
+          },
+          Qt::QueuedConnection );
+        return;
+      }
 
       if ( requestType == mega::MegaRequest::TYPE_LOGIN )
       {
@@ -99,6 +179,52 @@ class MegaCloudProviderPrivate final : public mega::MegaRequestListener
     std::unique_ptr<mega::MegaApi> api;
 
   private:
+    QString uploadId;
+    QString uploadSource;
+    QString uploadName;
+    QStringList uploadParts;
+    qsizetype folderIndex = 0;
+    mega::MegaHandle parentHandle = mega::INVALID_HANDLE;
+
+    void finishUpload( bool success, const QString &message )
+    {
+      const QString id = uploadId;
+      uploadId.clear();
+      uploadParts.clear();
+      q->setStatusMessage( message );
+      emit q->transferFinished( id, success, message );
+    }
+
+    void advanceUpload()
+    {
+      std::unique_ptr<mega::MegaNode> parent( api->getNodeByHandle( parentHandle ) );
+      if ( !parent || !parent->isFolder() )
+      {
+        finishUpload( false, MegaCloudProvider::tr( "MEGA destination folder is unavailable." ) );
+        return;
+      }
+      while ( folderIndex < uploadParts.size() )
+      {
+        const QByteArray name = uploadParts.at( folderIndex ).toUtf8();
+        std::unique_ptr<mega::MegaNode> child( api->getChildNode( parent.get(), name.constData() ) );
+        if ( !child )
+        {
+          api->createFolder( name.constData(), parent.get(), this );
+          return;
+        }
+        if ( !child->isFolder() )
+        {
+          finishUpload( false, MegaCloudProvider::tr( "A file occupies the destination folder path in MEGA." ) );
+          return;
+        }
+        parentHandle = child->getHandle();
+        parent = std::move( child );
+        ++folderIndex;
+      }
+      api->startUpload( uploadSource.toUtf8().constData(), parent.get(), uploadName.toUtf8().constData(),
+                        mega::MegaApi::INVALID_CUSTOM_MOD_TIME, uploadId.toUtf8().constData(), false, false, nullptr, this );
+    }
+
     void dispatchAuthentication( bool success, const QString &message, const QByteArray &session )
     {
       QMetaObject::invokeMethod(
@@ -193,6 +319,13 @@ void MegaCloudProvider::authenticate()
 
 void MegaCloudProvider::login( const QString &email, const QString &password, bool rememberSession )
 {
+#ifdef TGP_WITH_MEGA_SDK
+  if ( mSdk->uploading() )
+  {
+    setStatusMessage( tr( "Wait for the current MEGA transfer before changing accounts." ) );
+    return;
+  }
+#endif
   const QString normalizedEmail = email.trimmed();
   if ( normalizedEmail.isEmpty() || password.isEmpty() )
   {
@@ -213,6 +346,13 @@ void MegaCloudProvider::login( const QString &email, const QString &password, bo
 
 void MegaCloudProvider::logout()
 {
+#ifdef TGP_WITH_MEGA_SDK
+  if ( mSdk->uploading() )
+  {
+    setStatusMessage( tr( "Wait for the current MEGA transfer to finish before disconnecting." ) );
+    return;
+  }
+#endif
   clearStoredSession();
   setReady( false );
   setAuthenticating( false );
@@ -229,12 +369,46 @@ void MegaCloudProvider::listProjects()
 
 void MegaCloudProvider::downloadSnapshot( const QString &, const QString &, const QUrl & )
 {
-  emit transferFinished( {}, false, tr( "MEGA SDK is not linked yet." ) );
+  emit transferFinished( {}, false, tr( "Downloading snapshots inside TGP-FIELD is not implemented yet. Use MEGA to download the exported archive." ) );
 }
 
-void MegaCloudProvider::uploadObject( const QString &objectId, const QString &, const QUrl &, const QByteArray & )
+void MegaCloudProvider::uploadObject( const QString &objectId, const QString &remotePath, const QUrl &source, const QByteArray &sha256 )
 {
-  emit transferFinished( objectId, false, isReady() ? tr( "MEGA upload support is the next integration stage." ) : tr( "Connect to MEGA before uploading." ) );
+#ifdef TGP_WITH_MEGA_SDK
+  if ( !isReady() || mSdk->uploading() )
+  {
+    emit transferFinished( objectId, false, tr( "MEGA is disconnected or another upload is active." ) );
+    return;
+  }
+  const QStringList parts = remotePath.split( QLatin1Char( '/' ), Qt::SkipEmptyParts );
+  if ( objectId.isEmpty() || !remotePath.startsWith( QLatin1String( "/TGP-FIELD/" ) ) || parts.size() < 2
+       || parts.contains( QStringLiteral( "." ) ) || parts.contains( QStringLiteral( ".." ) )
+       || remotePath.contains( QLatin1Char( '\\' ) ) || remotePath.contains( QChar( 0 ) ) || remotePath.endsWith( QLatin1Char( '/' ) ) )
+  {
+    emit transferFinished( objectId, false, tr( "Invalid MEGA destination path." ) );
+    return;
+  }
+  QFile file( source.toLocalFile() );
+  QCryptographicHash hash( QCryptographicHash::Sha256 );
+  if ( !source.isLocalFile() || !QFileInfo( file ).isFile() || !file.open( QIODevice::ReadOnly ) || !hash.addData( &file ) )
+  {
+    emit transferFinished( objectId, false, tr( "Cannot read the local export archive." ) );
+    return;
+  }
+  if ( sha256.size() != 32 || hash.result() != sha256 )
+  {
+    emit transferFinished( objectId, false, tr( "The archive changed since export. Create a new export before uploading." ) );
+    return;
+  }
+  file.close();
+  setStatusMessage( tr( "Uploading archive to MEGA…" ) );
+  mSdk->upload( objectId, remotePath, source.toLocalFile() );
+#else
+  Q_UNUSED( remotePath )
+  Q_UNUSED( source )
+  Q_UNUSED( sha256 )
+  emit transferFinished( objectId, false, tr( "This installer was built without the MEGA SDK." ) );
+#endif
 }
 
 void MegaCloudProvider::setReady( bool ready )

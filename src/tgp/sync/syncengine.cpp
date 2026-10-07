@@ -3,6 +3,7 @@
 #include "syncengine.h"
 
 #include <QFileInfo>
+#include <QMetaObject>
 #include <QUrl>
 
 using namespace Tgp;
@@ -46,6 +47,8 @@ void SyncEngine::synchronize()
 
 void SyncEngine::retry( const QString &jobId )
 {
+  if ( busy() )
+    return;
   for ( OfflineExportJob job : mQueue->jobs() )
   {
     if ( job.jobId != jobId )
@@ -60,6 +63,12 @@ void SyncEngine::retry( const QString &jobId )
 
 void SyncEngine::processNext()
 {
+  if ( !mProvider || !mProvider->isReady() )
+  {
+    mActiveJobId.clear();
+    setBusy( false );
+    return;
+  }
   for ( OfflineExportJob job : mQueue->pendingJobs() )
   {
     if ( job.state == ExportState::Preparing || job.state == ExportState::Cancelled )
@@ -105,5 +114,10 @@ void SyncEngine::handleTransferFinished( const QString &objectId, bool success, 
     break;
   }
   mActiveJobId.clear();
-  processNext();
+  if ( !success )
+  {
+    setBusy( false );
+    return;
+  }
+  QMetaObject::invokeMethod( this, &SyncEngine::processNext, Qt::QueuedConnection );
 }
